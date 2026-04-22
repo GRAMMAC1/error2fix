@@ -1,8 +1,8 @@
 {
   "$schema": "https://unpkg.com/release-it@20/schema/release-it.json",
   "git": {
-    "commitMessage": "chore(release): ${name} v${version}",
-    "tagName": "${name}@${version}",
+    "commitMessage": "chore(release): v${version}",
+    "tagName": "${version}",
     "requireCleanWorkingDir": true,
     "requireUpstream": true
   },
