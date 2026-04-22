@@ -1,6 +1,6 @@
 {
   "name": "error2fix",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Post-failure terminal diagnosis assistant for developers.",
   "type": "module",
   "bin": {
