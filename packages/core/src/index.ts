@@ -12,10 +12,6 @@ export {
   buildProjectContext,
   readLogFile,
 } from './context/project.js';
-export {
-  evaluateFixture,
-  runPromptEval,
-} from './evals/prompt-eval.js';
 export { categorizeFromCommand } from './parsers/category.js';
 export { parseLogContent } from './parsers/logfile.js';
 export {
