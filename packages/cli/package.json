@@ -1,0 +1,33 @@
+{
+  "name": "error2fix",
+  "version": "0.1.0",
+  "description": "Post-failure terminal diagnosis assistant for developers.",
+  "type": "module",
+  "bin": {
+    "e2f": "./dist/cli.js"
+  },
+  "files": ["dist", "README.md"],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "node --import tsx src/cli.ts",
+    "prepack": "pnpm build && node ../../scripts/prepare-cli-publish.mjs",
+    "release": "release-it",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "keywords": ["cli", "developer-tools", "errors", "diagnostics", "typescript"],
+  "author": "GRAMMAC@163.com",
+  "license": "MIT",
+  "dependencies": {
+    "cac": "^6.7.14",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@error2fix/core": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

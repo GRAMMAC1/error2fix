@@ -1,0 +1,15 @@
+# >>> e2f init >>>
+autoload -Uz add-zsh-hook
+typeset -g E2F_LAST_COMMAND=""
+__e2f_preexec() {
+  E2F_LAST_COMMAND="$1"
+}
+__e2f_precmd() {
+  local exit_code=$?
+  if [[ $exit_code -ne 0 && -n "$E2F_LAST_COMMAND" ]]; then
+    e2f __capture --shell zsh --command "$E2F_LAST_COMMAND" --exit-code "$exit_code" --cwd "$PWD" --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >/dev/null 2>&1
+  fi
+}
+add-zsh-hook preexec __e2f_preexec
+add-zsh-hook precmd __e2f_precmd
+# <<< e2f init <<<

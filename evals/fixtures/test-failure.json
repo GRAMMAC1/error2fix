@@ -1,0 +1,67 @@
+{
+  "name": "test-failure",
+  "parsed": {
+    "category": "test_failure",
+    "summary": "A unit test assertion failed.",
+    "errorText": "FAIL src/button.test.ts\nAssertionError: expected 'Submit' to equal 'Save'\n    at src/button.test.ts:22:17"
+  },
+  "session": {
+    "id": "eval-4",
+    "command": "pnpm test",
+    "exitCode": 1,
+    "cwd": "/repo/app",
+    "shell": "zsh",
+    "timestamp": "2026-04-21T12:15:00.000Z",
+    "stdoutSnippet": "FAIL src/button.test.ts",
+    "stderrSnippet": "AssertionError: expected 'Submit' to equal 'Save'",
+    "projectType": "react",
+    "env": {
+      "os": "darwin",
+      "nodeVersion": "v24.14.0",
+      "packageManager": "pnpm"
+    }
+  },
+  "context": {
+    "cwd": "/repo/app",
+    "packageJson": {
+      "name": "ui",
+      "private": true,
+      "packageManager": "pnpm@10",
+      "scripts": {
+        "test": "vitest run"
+      },
+      "dependencies": ["react"],
+      "devDependencies": ["vitest", "typescript"]
+    },
+    "lockfiles": ["pnpm-lock.yaml"],
+    "tsconfig": {
+      "exists": true,
+      "compilerOptions": {}
+    },
+    "configFiles": ["package.json", "tsconfig.json"],
+    "framework": "react",
+    "projectType": "react",
+    "gitBranch": "main"
+  },
+  "expectedState": {
+    "failureCategory": "test",
+    "mustIncludeFiles": ["src/button.test.ts"],
+    "mustIncludeKeywords": ["AssertionError", "FAIL"],
+    "mustHaveSnippet": true
+  },
+  "expectedPrompt": {
+    "requiredSections": [
+      "Command:",
+      "Host:",
+      "Failure:",
+      "Error details:",
+      "Please provide:"
+    ],
+    "requiredStrings": [
+      "Raw command: pnpm test",
+      "AssertionError",
+      "src/button.test.ts"
+    ],
+    "requiredGoals": ["2. Explanation", "3. Concrete fix steps"]
+  }
+}

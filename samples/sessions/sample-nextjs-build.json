@@ -1,0 +1,16 @@
+{
+  "id": "2026-04-21T12-00-00-000Z-a1b2c3d4",
+  "command": "npm run build",
+  "exitCode": 1,
+  "cwd": "/Users/foo/project",
+  "shell": "zsh",
+  "timestamp": "2026-04-21T12:00:00.000Z",
+  "stdoutSnippet": "",
+  "stderrSnippet": "Failed to compile",
+  "projectType": "nextjs",
+  "env": {
+    "os": "darwin 24.4.0",
+    "nodeVersion": "v24.14.0",
+    "packageManager": "npm"
+  }
+}

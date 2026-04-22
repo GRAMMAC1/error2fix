@@ -1,0 +1,17 @@
+# >>> e2f init >>>
+__E2F_LAST_COMMAND=""
+__e2f_preexec() {
+  case "$BASH_COMMAND" in
+    __e2f_precmd*|history* ) return ;;
+  esac
+  __E2F_LAST_COMMAND="$BASH_COMMAND"
+}
+trap '__e2f_preexec' DEBUG
+__e2f_precmd() {
+  local exit_code=$?
+  if [ "$exit_code" -ne 0 ] && [ -n "$__E2F_LAST_COMMAND" ]; then
+    e2f __capture --shell bash --command "$__E2F_LAST_COMMAND" --exit-code "$exit_code" --cwd "$PWD" --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >/dev/null 2>&1
+  fi
+}
+PROMPT_COMMAND="__e2f_precmd${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+# <<< e2f init <<<

@@ -1,0 +1,75 @@
+{
+  "name": "typescript-build-error",
+  "parsed": {
+    "category": "typescript_error",
+    "summary": "Build failed during TypeScript compilation.",
+    "errorText": "src/app.ts:14:7 - error TS2322: Type 'string' is not assignable to type 'number'\nat build (/repo/src/app.ts:14:7)"
+  },
+  "session": {
+    "id": "eval-1",
+    "command": "pnpm build",
+    "exitCode": 1,
+    "cwd": "/repo/app",
+    "shell": "zsh",
+    "timestamp": "2026-04-21T12:00:00.000Z",
+    "stdoutSnippet": "",
+    "stderrSnippet": "src/app.ts:14:7 - error TS2322: Type 'string' is not assignable to type 'number'",
+    "projectType": "react",
+    "env": {
+      "os": "darwin",
+      "nodeVersion": "v24.14.0",
+      "packageManager": "pnpm"
+    }
+  },
+  "context": {
+    "cwd": "/repo/app",
+    "packageJson": {
+      "name": "demo",
+      "private": true,
+      "packageManager": "pnpm@10",
+      "scripts": {
+        "build": "vite build"
+      },
+      "dependencies": ["react", "vite"],
+      "devDependencies": ["typescript"]
+    },
+    "lockfiles": ["pnpm-lock.yaml"],
+    "tsconfig": {
+      "exists": true,
+      "compilerOptions": {
+        "strict": true
+      }
+    },
+    "configFiles": ["tsconfig.json", "vite.config.ts"],
+    "framework": "react",
+    "projectType": "react",
+    "gitBranch": "main"
+  },
+  "expectedState": {
+    "failureCategory": "compile",
+    "mustIncludeFiles": ["src/app.ts"],
+    "mustIncludeKeywords": ["TS2322"],
+    "mustHaveSnippet": true
+  },
+  "expectedPrompt": {
+    "requiredSections": [
+      "Command:",
+      "Host:",
+      "Failure:",
+      "Error details:",
+      "Please provide:"
+    ],
+    "requiredStrings": [
+      "Raw command: pnpm build",
+      "Exit code: 1",
+      "Key snippet:",
+      "src/app.ts"
+    ],
+    "requiredGoals": [
+      "1. Root cause",
+      "2. Explanation",
+      "3. Concrete fix steps",
+      "4. Files to inspect"
+    ]
+  }
+}

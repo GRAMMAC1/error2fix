@@ -1,0 +1,9 @@
+# >>> e2f init >>>
+function __e2f_postexec --on-event fish_postexec
+  set -l exit_code $status
+  set -l command (history --max=1)
+  if test $exit_code -ne 0; and test -n "$command"
+    e2f __capture --shell fish --command "$command" --exit-code "$exit_code" --cwd "$PWD" --timestamp (date -u +"%Y-%m-%dT%H:%M:%SZ") >/dev/null 2>/dev/null
+  end
+end
+# <<< e2f init <<<

@@ -1,0 +1,68 @@
+{
+  "name": "missing-script",
+  "parsed": {
+    "category": "unknown",
+    "summary": "The requested package script does not exist.",
+    "errorText": "ERR_PNPM_NO_SCRIPT Missing script: no-script\nCommand \"no-script\" not found."
+  },
+  "session": {
+    "id": "eval-2",
+    "command": "pnpm run no-script",
+    "exitCode": 1,
+    "cwd": "/repo/app",
+    "shell": "zsh",
+    "timestamp": "2026-04-21T12:05:00.000Z",
+    "stdoutSnippet": "",
+    "stderrSnippet": "ERR_PNPM_NO_SCRIPT Missing script: no-script\nCommand \"no-script\" not found.",
+    "projectType": "node",
+    "env": {
+      "os": "darwin",
+      "nodeVersion": "v24.14.0",
+      "packageManager": "pnpm"
+    }
+  },
+  "context": {
+    "cwd": "/repo/app",
+    "packageJson": {
+      "name": "demo",
+      "private": true,
+      "packageManager": "pnpm@10",
+      "scripts": {
+        "build": "vite build",
+        "test": "vitest run"
+      },
+      "dependencies": ["react"],
+      "devDependencies": ["typescript"]
+    },
+    "lockfiles": ["pnpm-lock.yaml"],
+    "tsconfig": {
+      "exists": true,
+      "compilerOptions": {}
+    },
+    "configFiles": ["package.json", "tsconfig.json"],
+    "framework": "node",
+    "projectType": "node",
+    "gitBranch": "main"
+  },
+  "expectedState": {
+    "failureCategory": "unknown",
+    "mustIncludeFiles": [],
+    "mustIncludeKeywords": ["ERR_PNPM_NO_SCRIPT", "Missing script"],
+    "mustHaveSnippet": true
+  },
+  "expectedPrompt": {
+    "requiredSections": [
+      "Command:",
+      "Host:",
+      "Failure:",
+      "Error details:",
+      "Please provide:"
+    ],
+    "requiredStrings": [
+      "Raw command: pnpm run no-script",
+      "ERR_PNPM_NO_SCRIPT",
+      "Missing script"
+    ],
+    "requiredGoals": ["1. Root cause", "4. Files to inspect"]
+  }
+}

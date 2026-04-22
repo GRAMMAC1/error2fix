@@ -1,0 +1,48 @@
+{
+  "name": "error2fix-workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.6.2",
+  "description": "Post-failure terminal diagnosis for developers.",
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" build",
+    "check": "biome check .",
+    "dev": "pnpm --filter error2fix dev",
+    "eval:prompt": "node --import tsx packages/core/src/evals/prompt-eval.ts",
+    "format": "biome format --write .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "mcp:dev": "pnpm --filter @error2fix/mcp dev",
+    "mcp:start": "pnpm --filter @error2fix/mcp start",
+    "prepare": "simple-git-hooks",
+    "release:cli": "pnpm --dir packages/cli release",
+    "release:mcp": "pnpm --dir packages/mcp release",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,json,md,yaml,yml}": "biome check --write --no-errors-on-unmatched",
+    "*.{js,mjs,cjs,ts}": "eslint --max-warnings=0"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm exec lint-staged"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-n": "^17.23.1",
+    "execa": "^9.6.0",
+    "globals": "^16.4.0",
+    "lint-staged": "^15.5.2",
+    "release-it": "^20.0.0",
+    "simple-git-hooks": "^2.13.1",
+    "tsup": "^8.3.6",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.46.2",
+    "vitest": "^3.1.2"
+  }
+}

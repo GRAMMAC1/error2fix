@@ -1,0 +1,64 @@
+{
+  "name": "dependency-install-error",
+  "parsed": {
+    "category": "dependency_install",
+    "summary": "Dependency installation failed because a package version could not be resolved.",
+    "errorText": "ERR_PNPM_NO_MATCHING_VERSION No matching version found for left-pad@999.0.0\nThis error happened while installing a direct dependency of /repo/app"
+  },
+  "session": {
+    "id": "eval-5",
+    "command": "pnpm install",
+    "exitCode": 1,
+    "cwd": "/repo/app",
+    "shell": "fish",
+    "timestamp": "2026-04-21T12:20:00.000Z",
+    "stdoutSnippet": "",
+    "stderrSnippet": "ERR_PNPM_NO_MATCHING_VERSION No matching version found for left-pad@999.0.0",
+    "projectType": "node",
+    "env": {
+      "os": "linux",
+      "nodeVersion": "v24.14.0",
+      "packageManager": "pnpm"
+    }
+  },
+  "context": {
+    "cwd": "/repo/app",
+    "packageJson": {
+      "name": "demo",
+      "private": true,
+      "packageManager": "pnpm@10",
+      "scripts": {},
+      "dependencies": ["left-pad"],
+      "devDependencies": []
+    },
+    "lockfiles": ["pnpm-lock.yaml"],
+    "tsconfig": {
+      "exists": false,
+      "compilerOptions": {}
+    },
+    "configFiles": ["package.json"],
+    "framework": "node",
+    "projectType": "node",
+    "gitBranch": "main"
+  },
+  "expectedState": {
+    "failureCategory": "dependency",
+    "mustIncludeFiles": [],
+    "mustIncludeKeywords": ["ERR_PNPM_NO_MATCHING_VERSION"],
+    "mustHaveSnippet": true
+  },
+  "expectedPrompt": {
+    "requiredSections": [
+      "Command:",
+      "Host:",
+      "Failure:",
+      "Error details:",
+      "Please provide:"
+    ],
+    "requiredStrings": [
+      "Raw command: pnpm install",
+      "ERR_PNPM_NO_MATCHING_VERSION"
+    ],
+    "requiredGoals": ["1. Root cause", "3. Concrete fix steps"]
+  }
+}

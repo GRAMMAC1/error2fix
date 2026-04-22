@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/release-it@20/schema/release-it.json",
+  "git": {
+    "commitMessage": "chore(release): ${name} v${version}",
+    "tagName": "${name}@${version}",
+    "requireCleanWorkingDir": true,
+    "requireUpstream": true
+  },
+  "npm": {
+    "publish": true,
+    "publishArgs": ["--cache", "../../.npm-cache", "--access", "public"]
+  },
+  "hooks": {
+    "before:init": [
+      "pnpm --dir ../.. lint",
+      "pnpm --dir ../.. typecheck",
+      "pnpm --dir ../.. test"
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "name": "runtime-module-not-found",
+  "parsed": {
+    "category": "runtime_error",
+    "summary": "Application failed at runtime because a module import could not be resolved.",
+    "errorText": "Error: Cannot find module './config'\nRequire stack:\n- /repo/app/src/server.ts\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)\n    at start (/repo/app/src/server.ts:10:5)"
+  },
+  "session": {
+    "id": "eval-3",
+    "command": "node src/server.ts",
+    "exitCode": 1,
+    "cwd": "/repo/app",
+    "shell": "bash",
+    "timestamp": "2026-04-21T12:10:00.000Z",
+    "stdoutSnippet": "",
+    "stderrSnippet": "Error: Cannot find module './config'\nRequire stack:\n- /repo/app/src/server.ts",
+    "projectType": "node",
+    "env": {
+      "os": "linux",
+      "nodeVersion": "v24.14.0",
+      "packageManager": "npm"
+    }
+  },
+  "context": {
+    "cwd": "/repo/app",
+    "packageJson": {
+      "name": "api",
+      "private": true,
+      "packageManager": "npm@11",
+      "scripts": {
+        "start": "node src/server.ts"
+      },
+      "dependencies": ["express"],
+      "devDependencies": ["typescript"]
+    },
+    "lockfiles": ["package-lock.json"],
+    "tsconfig": {
+      "exists": true,
+      "compilerOptions": {}
+    },
+    "configFiles": ["package.json", "tsconfig.json"],
+    "framework": "node",
+    "projectType": "node",
+    "gitBranch": "main"
+  },
+  "expectedState": {
+    "failureCategory": "runtime",
+    "mustIncludeFiles": ["/repo/app/src/server.ts"],
+    "mustIncludeKeywords": ["Cannot find module", "Error"],
+    "mustHaveSnippet": true
+  },
+  "expectedPrompt": {
+    "requiredSections": [
+      "Command:",
+      "Host:",
+      "Failure:",
+      "Error details:",
+      "Please provide:"
+    ],
+    "requiredStrings": [
+      "Raw command: node src/server.ts",
+      "Cannot find module",
+      "/repo/app/src/server.ts"
+    ],
+    "requiredGoals": ["1. Root cause", "3. Concrete fix steps"]
+  }
+}

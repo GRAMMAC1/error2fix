@@ -1,0 +1,48 @@
+{
+  "name": "@error2fix/mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "MCP server for error2fix terminal failure diagnosis.",
+  "bin": {
+    "e2f-mcp": "./dist/server.js"
+  },
+  "files": ["dist", "README.md"],
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/server.js",
+  "types": "./dist/server.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "node --import tsx src/server.ts",
+    "prepack": "pnpm build",
+    "release": "release-it",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "developer-tools",
+    "errors",
+    "diagnostics"
+  ],
+  "author": "GRAMMAC@163.com",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@error2fix/core": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "generatedAt": "2026-04-22T08:50:12.671Z",
+  "summary": {
+    "cases": 5,
+    "avgStateScore": 0.96,
+    "avgPromptScore": 1,
+    "avgOverallScore": 0.9800000000000001
+  },
+  "cases": [
+    {
+      "name": "dependency-install-error",
+      "stateScore": 1,
+      "promptScore": 1,
+      "overallScore": 1,
+      "issues": [],
+      "checks": {
+        "snippetPresent": true,
+        "categoryCorrect": true,
+        "fileScore": 1,
+        "keywordScore": 1,
+        "requiredFieldsPresent": true,
+        "sectionScore": 1,
+        "requiredStringScore": 1,
+        "requiredGoalScore": 1,
+        "sectionOrderValid": true
+      }
+    },
+    {
+      "name": "missing-script",
+      "stateScore": 1,
+      "promptScore": 1,
+      "overallScore": 1,
+      "issues": [],
+      "checks": {
+        "snippetPresent": true,
+        "categoryCorrect": true,
+        "fileScore": 1,
+        "keywordScore": 1,
+        "requiredFieldsPresent": true,
+        "sectionScore": 1,
+        "requiredStringScore": 1,
+        "requiredGoalScore": 1,
+        "sectionOrderValid": true
+      }
+    },
+    {
+      "name": "runtime-module-not-found",
+      "stateScore": 0.9,
+      "promptScore": 1,
+      "overallScore": 0.95,
+      "issues": ["missing keywords"],
+      "checks": {
+        "snippetPresent": true,
+        "categoryCorrect": true,
+        "fileScore": 1,
+        "keywordScore": 0.5,
+        "requiredFieldsPresent": true,
+        "sectionScore": 1,
+        "requiredStringScore": 1,
+        "requiredGoalScore": 1,
+        "sectionOrderValid": true
+      }
+    },
+    {
+      "name": "test-failure",
+      "stateScore": 0.9,
+      "promptScore": 1,
+      "overallScore": 0.95,
+      "issues": ["missing keywords"],
+      "checks": {
+        "snippetPresent": true,
+        "categoryCorrect": true,
+        "fileScore": 1,
+        "keywordScore": 0.5,
+        "requiredFieldsPresent": true,
+        "sectionScore": 1,
+        "requiredStringScore": 1,
+        "requiredGoalScore": 1,
+        "sectionOrderValid": true
+      }
+    },
+    {
+      "name": "typescript-build-error",
+      "stateScore": 1,
+      "promptScore": 1,
+      "overallScore": 1,
+      "issues": [],
+      "checks": {
+        "snippetPresent": true,
+        "categoryCorrect": true,
+        "fileScore": 1,
+        "keywordScore": 1,
+        "requiredFieldsPresent": true,
+        "sectionScore": 1,
+        "requiredStringScore": 1,
+        "requiredGoalScore": 1,
+        "sectionOrderValid": true
+      }
+    }
+  ]
+}
