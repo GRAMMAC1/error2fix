@@ -7,8 +7,7 @@
     "requireUpstream": true
   },
   "npm": {
-    "publish": true,
-    "publishArgs": ["--cache", "../../.npm-cache", "--access", "public"]
+    "publish": true
   },
   "hooks": {
     "before:init": [
