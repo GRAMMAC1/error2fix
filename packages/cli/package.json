@@ -13,8 +13,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "node --import tsx src/cli.ts",
-    "prepack": "pnpm build && node ../../scripts/prepare-cli-publish.mjs",
-    "release": "release-it",
+    "release": "npm run build && release-it",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "keywords": ["cli", "developer-tools", "errors", "diagnostics", "typescript"],

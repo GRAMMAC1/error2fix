@@ -21,8 +21,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "node --import tsx src/server.ts",
-    "prepack": "pnpm build",
-    "release": "release-it",
+    "release": "npm run build && release-it",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
