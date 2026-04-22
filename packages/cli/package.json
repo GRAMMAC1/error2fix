@@ -1,5 +1,5 @@
 {
-  "name": "error2fix",
+  "name": "@error2fix/cli",
   "version": "0.1.0",
   "description": "Post-failure terminal diagnosis assistant for developers.",
   "type": "module",
