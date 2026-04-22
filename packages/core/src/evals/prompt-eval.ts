@@ -286,7 +286,7 @@ export async function runPromptEval(): Promise<EvalReport> {
     cases,
   };
 
-  const reportPath = path.join(reportsDir, 'prompt-report.json');
+  const reportPath = path.join(reportsDir, 'report.prompt.json');
   await fs.writeFile(reportPath, JSON.stringify(report, null, 2), 'utf8');
   return report;
 }
