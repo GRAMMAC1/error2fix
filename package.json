@@ -9,6 +9,7 @@
     "check": "biome check .",
     "dev": "pnpm --filter error2fix dev",
     "format": "biome format --write .",
+    "inspect:log": "node --import tsx scripts/inspect-log-pipeline.ts",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "mcp:dev": "pnpm --filter @error2fix/mcp dev",

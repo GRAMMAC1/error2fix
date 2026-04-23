@@ -4,7 +4,7 @@ import {
   normalizeLogs,
   rankSignals,
   segmentLogs,
-} from '../packages/core/src/logs/index.js';
+} from '../packages/core/src/log-parser/index.js';
 
 describe('log pipeline', () => {
   it('normalizes noisy logs and extracts ranked signals from stderr-first failures', () => {

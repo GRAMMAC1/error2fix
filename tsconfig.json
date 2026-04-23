@@ -3,5 +3,10 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["packages/**/*.ts", "test/**/*.ts", "e2e/**/*.ts"]
+  "include": [
+    "packages/**/*.ts",
+    "test/**/*.ts",
+    "e2e/**/*.ts",
+    "scripts/**/*.ts"
+  ]
 }
