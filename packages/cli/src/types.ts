@@ -1,6 +1,5 @@
 export type {
   CliFlags,
-  Diagnosis,
   ExplainResult,
   FailureSession,
   ProjectContext,

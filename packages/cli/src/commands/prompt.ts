@@ -5,6 +5,6 @@ import { buildLatestFailureResult } from './fix.js';
 export async function runPromptCommand(flags: CliFlags): Promise<string> {
   const result = await buildLatestFailureResult();
   return flags.json
-    ? formatJsonPayload({ prompt: result.diagnosis.prompt })
-    : result.diagnosis.prompt;
+    ? formatJsonPayload({ prompt: result.prompt })
+    : result.prompt;
 }

@@ -12,7 +12,7 @@ export async function explainLogFile(logFile: string): Promise<ExplainResult> {
   const logContent = await readLogFile(absoluteLogFile);
   const cwd = path.dirname(absoluteLogFile);
   const context = await buildProjectContext(cwd);
-  const { session, diagnosis } = await diagnoseCapture(
+  return diagnoseCapture(
     {
       metadata: {
         command: `explain ${path.basename(logFile)}`,
@@ -28,11 +28,6 @@ export async function explainLogFile(logFile: string): Promise<ExplainResult> {
     },
     context,
   );
-  return {
-    session,
-    context,
-    diagnosis,
-  };
 }
 
 export async function runExplainCommand(

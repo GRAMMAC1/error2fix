@@ -23,7 +23,8 @@ describe('explainLogFile', () => {
       "src/app.ts:14:7 - error TS2322: Type 'string' is not assignable to type 'number'\n",
     );
     const result = await explainLogFile(path.join(cwd, 'build.log'));
-    expect(result.diagnosis.category).toBe('typescript_error');
-    expect(result.diagnosis.keyErrorSnippet).toContain('TS2322');
+    expect(result.analysis.summary).toContain('TypeScript');
+    expect(result.analysis.keySnippet).toContain('TS2322');
+    expect(result.promptState.error.relatedFiles).toContain('src/app.ts');
   });
 });

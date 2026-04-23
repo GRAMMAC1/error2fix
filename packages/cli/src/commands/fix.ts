@@ -14,8 +14,7 @@ export async function buildLatestFailureResult(): Promise<ExplainResult> {
     );
   }
   const context = await buildProjectContext(capture.metadata.cwd);
-  const { session, diagnosis } = await diagnoseCapture(capture, context);
-  return { session, context, diagnosis };
+  return diagnoseCapture(capture, context);
 }
 
 export async function runFixCommand(flags: CliFlags): Promise<string> {

@@ -1,52 +1,33 @@
 import { describe, expect, it } from 'vitest';
 import {
+  aggregateCoreAnalysis,
+  buildCoreAnalysisInput,
   buildPromptState,
-  extractKeywords,
-  extractRelatedFiles,
-  extractStackLines,
-} from '../packages/core/src/prompt/state.js';
+  getDefaultPluginRegistry,
+  runPlugins,
+} from '../packages/core/src/index.js';
 import type {
-  FailureSession,
+  LatestRawCapture,
   ProjectContext,
 } from '../packages/core/src/types.js';
 
 describe('prompt state', () => {
-  it('extracts files, keywords, and stack lines from error text', () => {
-    const errorText = [
-      "src/app.ts:14:7 - error TS2322: Type 'string' is not assignable to type 'number'",
-      'at build (/repo/src/app.ts:14:7)',
-      'ERR_PNPM_NO_SCRIPT Missing script: build',
-    ].join('\n');
-
-    expect(extractRelatedFiles(errorText)).toContain('src/app.ts');
-    expect(extractKeywords(errorText)).toEqual(
-      expect.arrayContaining(['TS2322', 'ERR_PNPM_NO_SCRIPT']),
-    );
-    expect(extractStackLines(errorText)).toEqual(
-      expect.arrayContaining([
-        "src/app.ts:14:7 - error TS2322: Type 'string' is not assignable to type 'number'",
-        'at build (/repo/src/app.ts:14:7)',
-      ]),
-    );
-  });
-
-  it('builds minimal prompt state from session and context', () => {
-    const session: FailureSession = {
-      id: 'session-1',
-      command: 'pnpm build',
-      exitCode: 1,
-      cwd: '/tmp/project',
-      shell: 'zsh',
-      timestamp: '2026-04-21T12:00:00.000Z',
-      stdoutSnippet: '',
-      stderrSnippet:
-        "src/app.ts:14:7 - error TS2322: Type 'string' is not assignable to type 'number'",
-      projectType: 'react',
-      env: {
-        os: 'darwin',
-        nodeVersion: 'v24.0.0',
-        packageManager: 'pnpm',
+  it('builds prompt state from pluginized analysis input', async () => {
+    const capture: LatestRawCapture = {
+      metadata: {
+        command: 'pnpm build',
+        exitCode: 1,
+        cwd: '/tmp/project',
+        shell: 'zsh',
+        timestamp: '2026-04-21T12:00:00.000Z',
       },
+      stdout: '',
+      stderr: [
+        "src/app.ts:14:7 - error TS2322: Type 'string' is not assignable to type 'number'",
+        'at build (/tmp/project/src/app.ts:14:7)',
+      ].join('\n'),
+      stdoutLogFile: '/tmp/stdout.log',
+      stderrLogFile: '/tmp/stderr.log',
     };
     const context: ProjectContext = {
       cwd: '/tmp/project',
@@ -66,18 +47,20 @@ describe('prompt state', () => {
       gitBranch: 'main',
     };
 
-    const state = buildPromptState(session, context, {
-      category: 'typescript_error',
-      summary: 'Build failed during TypeScript compilation.',
-      errorText: session.stderrSnippet,
-    });
+    const input = buildCoreAnalysisInput(capture, context);
+    const pluginResults = await runPlugins(input, getDefaultPluginRegistry());
+    const analysis = aggregateCoreAnalysis(input, pluginResults);
+    const state = buildPromptState(input, analysis);
 
     expect(state.command.raw).toBe('pnpm build');
-    expect(state.host?.runtime).toEqual(
-      expect.arrayContaining(['node@24.0.0', 'pnpm@10']),
-    );
-    expect(state.failure.category).toBe('compile');
-    expect(state.error.files).toContain('src/app.ts');
+    expect(state.host.os.platform.length).toBeGreaterThan(0);
+    expect(state.workspace.files).toContain('tsconfig.json');
+    expect(state.error.relatedFiles).toContain('src/app.ts');
+    expect(
+      state.pluginContext.some(
+        (entry) => entry.plugin === 'builtin-typescript',
+      ),
+    ).toBe(true);
     expect(state.goal.ask).toContain('files_to_inspect');
   });
 });

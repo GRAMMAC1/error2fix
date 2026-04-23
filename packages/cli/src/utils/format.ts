@@ -29,27 +29,30 @@ export function formatContext(
 
 export function formatDiagnosis(result: ExplainResult, color = true): string {
   const c = getColors(color);
-  const { session, context, diagnosis } = result;
+  const { session, context, analysis, prompt } = result;
   return [
     formatContext(session, context, color),
     '',
     c.bold(c.green('Diagnosis')),
-    printKeyValue('Structured summary', diagnosis.summary),
-    ...(diagnosis.category !== 'unknown'
-      ? [printKeyValue('Likely category', diagnosis.category)]
-      : []),
+    printKeyValue('Structured summary', analysis.summary),
     printKeyValue(
       'Key error snippet',
-      diagnosis.keyErrorSnippet || 'No error snippet captured',
+      analysis.keySnippet || 'No error snippet captured',
+    ),
+    printKeyValue('Related files', analysis.relatedFiles.join(', ') || 'none'),
+    '',
+    c.bold(c.yellow('Likely Causes')),
+    ...analysis.likelyCauses.map(
+      (cause: string, index: number) => `${index + 1}. ${cause}`,
     ),
     '',
     c.bold(c.yellow('Suggested Next Steps')),
-    ...diagnosis.suggestedNextSteps.map(
+    ...analysis.nextSteps.map(
       (step: string, index: number) => `${index + 1}. ${step}`,
     ),
     '',
     c.bold(c.magenta('Generated Prompt')),
-    diagnosis.prompt,
+    prompt,
   ].join('\n');
 }
 

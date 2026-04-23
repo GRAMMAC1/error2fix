@@ -1,13 +1,5 @@
 export type SupportedShell = 'zsh' | 'bash' | 'fish' | 'unknown';
 
-export type ErrorCategory =
-  | 'dependency_install'
-  | 'build_failure'
-  | 'typescript_error'
-  | 'test_failure'
-  | 'runtime_error'
-  | 'unknown';
-
 export interface CliFlags {
   json?: boolean;
   color?: boolean;
@@ -70,18 +62,11 @@ export interface ProjectContext {
   gitBranch: string | null;
 }
 
-export interface Diagnosis {
-  category: ErrorCategory;
-  summary: string;
-  likelyCauses: string[];
-  suggestedNextSteps: string[];
-  keyErrorSnippet: string;
-  promptState: import('./prompt/state.js').PromptState;
-  prompt: string;
-}
-
 export interface ExplainResult {
   session: FailureSession;
   context: ProjectContext;
-  diagnosis: Diagnosis;
+  input: import('./types/core.js').CoreAnalysisInput;
+  analysis: import('./types/core.js').CoreAnalysis;
+  promptState: import('./prompt/state.js').PromptState;
+  prompt: string;
 }

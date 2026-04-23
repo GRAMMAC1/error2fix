@@ -1,27 +1,32 @@
 import { describe, expect, it } from 'vitest';
-import { buildDiagnosis } from '../packages/core/src/prompt/generator.js';
+import {
+  aggregateCoreAnalysis,
+  buildCoreAnalysisInput,
+  buildPrompt,
+  buildPromptState,
+  getDefaultPluginRegistry,
+  runPlugins,
+} from '../packages/core/src/index.js';
 import type {
-  FailureSession,
+  LatestRawCapture,
   ProjectContext,
 } from '../packages/core/src/types.js';
 
 describe('prompt generation', () => {
-  it('includes command, framework, and requested output sections', () => {
-    const session: FailureSession = {
-      id: 'session-1',
-      command: 'npm run build',
-      exitCode: 1,
-      cwd: '/tmp/project',
-      shell: 'zsh',
-      timestamp: '2026-04-21T12:00:00.000Z',
-      stdoutSnippet: '',
-      stderrSnippet: '',
-      projectType: 'nextjs',
-      env: {
-        os: 'darwin',
-        nodeVersion: 'v24.0.0',
-        packageManager: 'npm',
+  it('includes command, workspace, plugin context, and requested output sections', async () => {
+    const capture: LatestRawCapture = {
+      metadata: {
+        command: 'npm run build',
+        exitCode: 1,
+        cwd: '/tmp/project',
+        shell: 'zsh',
+        timestamp: '2026-04-21T12:00:00.000Z',
       },
+      stdout: '',
+      stderr:
+        'src/app.ts:14:7 - error TS2322: Build error\nat build (/tmp/project/src/app.ts:14:7)\n',
+      stdoutLogFile: '/tmp/stdout.log',
+      stderrLogFile: '/tmp/stderr.log',
     };
     const context: ProjectContext = {
       cwd: '/tmp/project',
@@ -43,17 +48,17 @@ describe('prompt generation', () => {
       projectType: 'nextjs',
       gitBranch: 'main',
     };
-    const diagnosis = buildDiagnosis(
-      session,
-      context,
-      'build_failure',
-      'Build failed during compilation.',
-      'src/app.ts:14:7 - error TS2322: Build error',
-    );
-    expect(diagnosis.prompt).toContain('Raw command: npm run build');
-    expect(diagnosis.prompt).toContain('Runtime/tools: node@24.0.0, npm@11');
-    expect(diagnosis.prompt).toContain('Related files:');
-    expect(diagnosis.prompt).toContain('1. Root cause');
-    expect(diagnosis.promptState.error.files).toContain('src/app.ts');
+
+    const input = buildCoreAnalysisInput(capture, context);
+    const pluginResults = await runPlugins(input, getDefaultPluginRegistry());
+    const analysis = aggregateCoreAnalysis(input, pluginResults);
+    const prompt = buildPrompt(buildPromptState(input, analysis));
+
+    expect(prompt).toContain('Raw command: npm run build');
+    expect(prompt).toContain('Workspace:');
+    expect(prompt).toContain('Plugin context:');
+    expect(prompt).toContain('builtin-typescript');
+    expect(prompt).toContain('1. Root cause');
+    expect(prompt).toContain('src/app.ts');
   });
 });

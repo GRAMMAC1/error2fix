@@ -105,9 +105,12 @@ export async function getLatestFailureDiagnosisInput(
 
   try {
     const context = await buildProjectContext(capture.metadata.cwd);
-    const { session, diagnosis } = await diagnoseCapture(capture, context);
-    const state = promptStateSchema.parse(diagnosis.promptState);
-    const prompt = buildPrompt(state);
+    const { session, promptState, prompt } = await diagnoseCapture(
+      capture,
+      context,
+    );
+    const state = promptStateSchema.parse(promptState);
+    const renderedPrompt = buildPrompt(state);
 
     return getLatestFailureDiagnosisInputResultSchema.parse({
       ok: true,
@@ -116,7 +119,7 @@ export async function getLatestFailureDiagnosisInput(
         timestamp: session.timestamp,
         format,
         state: format === 'prompt' ? undefined : state,
-        prompt: format === 'state' ? undefined : prompt,
+        prompt: format === 'state' ? undefined : renderedPrompt || prompt,
       },
     });
   } catch (error) {

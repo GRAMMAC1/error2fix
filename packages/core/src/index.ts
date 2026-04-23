@@ -1,7 +1,5 @@
 export type {
   CliFlags,
-  Diagnosis,
-  ErrorCategory,
   ExplainResult,
   FailureSession,
   LatestRawCapture,
@@ -33,8 +31,6 @@ export { aggregateCoreAnalysis } from './analysis/aggregate.js';
 export { buildCoreAnalysisInput } from './analysis/build-input.js';
 export { diagnoseCapture } from './analysis/diagnose.js';
 export { loadLatestRawCapture } from './utils/store.js';
-export { categorizeFromCommand } from './parsers/category.js';
-export { parseLogContent } from './parsers/logfile.js';
 export {
   extractSignals,
   normalizeLogs,
@@ -47,17 +43,8 @@ export {
   registerPlugin,
 } from './plugin/registry.js';
 export { runPlugins } from './plugin/run.js';
-export {
-  buildDiagnosis,
-  buildPrompt,
-} from './prompt/generator.js';
-export {
-  buildPromptState,
-  extractKeywords,
-  extractRelatedFiles,
-  extractStackLines,
-  promptStateSchema,
-} from './prompt/state.js';
+export { buildPrompt } from './prompt/generator.js';
+export { buildPromptState, promptStateSchema } from './prompt/state.js';
 export { buildSession } from './session/capture.js';
 export { failureSessionSchema } from './session/schema.js';
 export {
