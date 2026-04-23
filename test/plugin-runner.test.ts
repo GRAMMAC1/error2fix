@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { ProjectContext } from '../packages/core/src/context/project.js';
 import {
   aggregateCoreAnalysis,
   buildCoreAnalysisInput,
@@ -28,32 +27,7 @@ describe('plugin runner', () => {
       stdoutLogFile: '/tmp/latest.stdout.log',
       stderrLogFile: '/tmp/latest.stderr.log',
     };
-    const context: ProjectContext = {
-      cwd: '/repo/app',
-      packageJson: {
-        name: 'demo-app',
-        private: true,
-        packageManager: 'pnpm@10.6.2',
-        scripts: {
-          build: 'vite build',
-        },
-        dependencies: ['react'],
-        devDependencies: ['typescript'],
-      },
-      lockfiles: ['pnpm-lock.yaml'],
-      tsconfig: {
-        exists: true,
-        compilerOptions: {
-          strict: true,
-        },
-      },
-      configFiles: ['tsconfig.json', 'vite.config.ts'],
-      framework: 'react',
-      projectType: 'react',
-      gitBranch: 'main',
-    };
-
-    const input = buildCoreAnalysisInput(capture, context);
+    const input = await buildCoreAnalysisInput(capture);
     const pluginResults = await runPlugins(input, getDefaultPluginRegistry());
     const analysis = aggregateCoreAnalysis(input, pluginResults);
 

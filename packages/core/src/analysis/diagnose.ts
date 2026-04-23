@@ -1,4 +1,3 @@
-import { buildProjectContext } from '../context/project.js';
 import { getDefaultPluginRegistry } from '../plugin/registry.js';
 import { runPlugins } from '../plugin/run.js';
 import type { CoreAnalysis } from '../types/core.js';
@@ -11,8 +10,7 @@ export async function diagnoseCapture(
   capture: LatestRawCapture,
   registry: PluginRegistry = getDefaultPluginRegistry(),
 ): Promise<CoreAnalysis> {
-  const context = await buildProjectContext(capture.metadata.cwd);
-  const input = buildCoreAnalysisInput(capture, context);
+  const input = await buildCoreAnalysisInput(capture);
   const pluginResults = await runPlugins(input, registry);
   return aggregateCoreAnalysis(input, pluginResults);
 }

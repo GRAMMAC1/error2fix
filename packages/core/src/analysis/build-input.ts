@@ -1,5 +1,4 @@
 import os from 'node:os';
-import type { ProjectContext } from '../context/project.js';
 import {
   extractSignals,
   normalizeLogs,
@@ -13,22 +12,45 @@ import type {
   CoreWorkspaceSnapshot,
 } from '../types/core.js';
 import type { LatestRawCapture } from '../types/metadata.js';
+import { fileExists } from '../utils/fs.js';
+import { detectGitBranch } from '../utils/git.js';
 
-function buildWorkspaceSnapshot(
-  context: ProjectContext,
-): CoreWorkspaceSnapshot {
-  const files = [
-    ...(context.packageJson ? ['package.json'] : []),
-    ...context.lockfiles,
-    ...context.configFiles,
-  ];
+const WORKSPACE_CANDIDATE_FILES = [
+  'package.json',
+  'tsconfig.json',
+  'vite.config.ts',
+  'vite.config.js',
+  'next.config.js',
+  'next.config.mjs',
+  'turbo.json',
+  'pnpm-lock.yaml',
+  'package-lock.json',
+  'yarn.lock',
+  'go.mod',
+  'go.work',
+  'Cargo.toml',
+  'composer.json',
+  'pom.xml',
+  'build.gradle',
+  'build.gradle.kts',
+];
 
+async function buildWorkspaceSnapshot(
+  cwd: string,
+): Promise<CoreWorkspaceSnapshot> {
+  const matches = await Promise.all(
+    WORKSPACE_CANDIDATE_FILES.map(async (file) =>
+      (await fileExists(`${cwd}/${file}`)) ? file : null,
+    ),
+  );
+  const files = matches.filter((file): file is string => file !== null);
+  const gitBranch = await detectGitBranch(cwd);
   return {
-    cwd: context.cwd,
-    root: context.cwd,
+    cwd,
+    root: cwd,
     files: [...new Set(files)],
     git: {
-      branch: context.gitBranch,
+      branch: gitBranch,
     },
   };
 }
@@ -74,13 +96,12 @@ function buildCoreSignals(capture: LatestRawCapture): CoreErrorSignalSet {
   };
 }
 
-export function buildCoreAnalysisInput(
+export async function buildCoreAnalysisInput(
   capture: LatestRawCapture,
-  context: ProjectContext,
-): CoreAnalysisInput {
+): Promise<CoreAnalysisInput> {
   return {
     capture: buildRawCapture(capture),
-    workspace: buildWorkspaceSnapshot(context),
+    workspace: await buildWorkspaceSnapshot(capture.metadata.cwd),
     signals: buildCoreSignals(capture),
   };
 }

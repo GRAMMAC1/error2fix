@@ -22,9 +22,7 @@ export type {
   PluginRegistry,
   PluginResult,
 } from './types/plugin.js';
-export type { ProjectContext } from './context/project.js';
 
-export { buildProjectContext, readLogFile } from './context/project.js';
 export { aggregateCoreAnalysis } from './analysis/aggregate.js';
 export { buildCoreAnalysisInput } from './analysis/build-input.js';
 export { diagnoseCapture } from './analysis/diagnose.js';
@@ -44,6 +42,7 @@ export { runPlugins } from './plugin/run.js';
 export { failureSessionSchema } from './session/schema.js';
 export { ensureE2FDirs } from './session/store.js';
 export { detectPackageManager } from './utils/env.js';
+export { detectGitBranch } from './utils/git.js';
 export {
   fileExists,
   readJsonFile,
