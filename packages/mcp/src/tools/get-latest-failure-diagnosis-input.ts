@@ -3,8 +3,8 @@ import {
   buildProjectContext,
   buildPrompt,
   buildPromptState,
-  loadCapturedOutput,
-  loadLatestSession,
+  buildSession,
+  loadLatestRawCapture,
   promptStateSchema,
 } from '@error2fix/core';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -94,8 +94,8 @@ export async function getLatestFailureDiagnosisInput(
   const format = args.format ?? 'both';
 
   // TODO use independent method to retrieve error stack traces.
-  const session = await loadLatestSession();
-  if (!session) {
+  const capture = await loadLatestRawCapture();
+  if (!capture) {
     return {
       ok: false,
       error: {
@@ -106,19 +106,28 @@ export async function getLatestFailureDiagnosisInput(
   }
 
   try {
+    const session = buildSession({
+      command: capture.metadata.command,
+      exitCode: capture.metadata.exitCode,
+      cwd: capture.metadata.cwd,
+      shell: capture.metadata.shell,
+      timestamp: capture.metadata.timestamp,
+      stdoutLogFile: capture.stdoutLogFile,
+      stderrLogFile: capture.stderrLogFile,
+    });
     const context = await buildProjectContext(session.cwd);
-    const capturedOutput = await loadCapturedOutput(session);
+    session.projectType = context.projectType;
     const diagnosis = buildDiagnosis(
       session,
       context,
       undefined,
       undefined,
-      capturedOutput.combined,
+      capture.stderr || capture.stdout,
     );
     const state = buildPromptState(session, context, {
       category: diagnosis.category,
       summary: diagnosis.summary,
-      errorText: capturedOutput.combined,
+      errorText: capture.stderr || capture.stdout,
       displaySnippet: diagnosis.keyErrorSnippet,
     });
     const prompt = buildPrompt(state);

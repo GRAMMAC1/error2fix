@@ -33,6 +33,22 @@ export interface FailureSession {
   };
 }
 
+export interface RawCaptureMetadata {
+  command: string;
+  exitCode: number;
+  cwd: string;
+  shell: SupportedShell;
+  timestamp: string;
+}
+
+export interface LatestRawCapture {
+  metadata: RawCaptureMetadata;
+  stdout: string;
+  stderr: string;
+  stdoutLogFile: string;
+  stderrLogFile: string;
+}
+
 export interface ProjectContext {
   cwd: string;
   packageJson: {

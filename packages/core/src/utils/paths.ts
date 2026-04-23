@@ -7,6 +7,8 @@ export interface E2FPaths {
   sessionsDir: string;
   latestSessionFile: string;
   logsDir: string;
+  latestStdoutLogFile: string;
+  latestStderrLogFile: string;
   cacheDir: string;
 }
 
@@ -19,6 +21,8 @@ export function getE2FPaths(
     sessionsDir: path.join(baseDir, 'sessions'),
     latestSessionFile: path.join(baseDir, 'sessions', 'latest.json'),
     logsDir: path.join(baseDir, 'logs'),
+    latestStdoutLogFile: path.join(baseDir, 'logs', 'latest.stdout.log'),
+    latestStderrLogFile: path.join(baseDir, 'logs', 'latest.stderr.log'),
     cacheDir: path.join(baseDir, 'cache'),
   };
 }

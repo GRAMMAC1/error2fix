@@ -1,4 +1,4 @@
-import { captureFailureSession } from '@error2fix/core';
+import { persistLatestRawCapture } from '@error2fix/core';
 import type { SupportedShell } from '../types.js';
 import { formatJsonPayload } from '../utils/format.js';
 
@@ -15,7 +15,7 @@ export interface CaptureOptions {
 export async function runInternalCaptureCommand(
   options: CaptureOptions,
 ): Promise<string> {
-  const session = await captureFailureSession({
+  const result = await persistLatestRawCapture({
     command: options.command,
     exitCode: options.exitCode,
     cwd: options.cwd,
@@ -24,5 +24,5 @@ export async function runInternalCaptureCommand(
     stdoutLogFile: options.stdoutLog,
     stderrLogFile: options.stderrLog,
   });
-  return formatJsonPayload(session);
+  return formatJsonPayload(result);
 }

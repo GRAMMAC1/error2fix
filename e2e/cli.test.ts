@@ -47,7 +47,7 @@ describe('CLI e2e', () => {
     const initResult = await runCli(tempHome, ['init', '--no-color']);
     const rcFile = path.join(tempHome, '.zshrc');
     const e2fHome = path.join(tempHome, '.e2f');
-    const latestSessionFile = path.join(e2fHome, 'sessions', 'latest.json');
+    const latestStderrLogFile = path.join(e2fHome, 'logs', 'latest.stderr.log');
 
     expect(initResult.stdout).toContain('Initialization Complete');
     expect(initResult.stdout).toContain(`Activate now: source ${rcFile}`);
@@ -56,7 +56,8 @@ describe('CLI e2e', () => {
     expect(rcAfterInit).toContain('# >>> e2f init >>>');
     await expect(fs.access(e2fHome)).resolves.toBeUndefined();
 
-    await fs.writeFile(latestSessionFile, '{"ok":true}\n', 'utf8');
+    await fs.mkdir(path.dirname(latestStderrLogFile), { recursive: true });
+    await fs.writeFile(latestStderrLogFile, 'simulated stderr\n', 'utf8');
 
     const clearResult = await runCli(tempHome, ['clear', '--no-color']);
     expect(clearResult.stdout).toContain('Clear Complete');

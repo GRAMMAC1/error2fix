@@ -4,7 +4,9 @@ export type {
   ErrorCategory,
   ExplainResult,
   FailureSession,
+  LatestRawCapture,
   ProjectContext,
+  RawCaptureMetadata,
   SupportedShell,
 } from './types.js';
 
@@ -14,6 +16,10 @@ export {
 } from './context/project.js';
 export { categorizeFromCommand } from './parsers/category.js';
 export { parseLogContent } from './parsers/logfile.js';
+export {
+  loadLatestRawCapture,
+  persistLatestRawCapture,
+} from './capture/store.js';
 export {
   buildDiagnosis,
   buildPrompt,

@@ -3,15 +3,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
-  buildSession,
-  captureFailureSession,
-} from '../packages/core/src/session/capture.js';
+  loadLatestRawCapture,
+  persistLatestRawCapture,
+} from '../packages/core/src/capture/store.js';
+import { buildSession } from '../packages/core/src/session/capture.js';
 import {
   ensureE2FDirs,
-  listSessions,
   loadCapturedOutput,
-  loadLatestSession,
-  saveSession,
 } from '../packages/core/src/session/store.js';
 import { getE2FPaths } from '../packages/core/src/utils/paths.js';
 
@@ -31,59 +29,13 @@ describe('session store', () => {
     );
   });
 
-  it('writes and loads latest session', async () => {
-    const paths = await makeTempPaths();
-    cleanup.push(paths.homeDir);
-    await ensureE2FDirs(paths);
-    const session = buildSession({
-      command: 'npm run build',
-      exitCode: 1,
-      cwd: '/tmp/project',
-      shell: 'zsh',
-      timestamp: '2026-04-21T12:00:00.000Z',
-    });
-
-    await saveSession(session, paths);
-    const latest = await loadLatestSession(paths);
-    expect(latest?.command).toBe('npm run build');
-    expect(latest?.exitCode).toBe(1);
-  });
-
-  it('lists sessions in reverse chronological order', async () => {
-    const paths = await makeTempPaths();
-    cleanup.push(paths.homeDir);
-    await ensureE2FDirs(paths);
-    const one = buildSession({
-      command: 'npm test',
-      exitCode: 1,
-      cwd: '/tmp/a',
-      shell: 'bash',
-      timestamp: '2026-04-21T12:00:00.000Z',
-    });
-    const two = buildSession({
-      command: 'pnpm build',
-      exitCode: 1,
-      cwd: '/tmp/b',
-      shell: 'zsh',
-      timestamp: '2026-04-21T12:05:00.000Z',
-    });
-
-    await saveSession(one, paths);
-    await saveSession(two, paths);
-    const sessions = await listSessions(10, paths);
-    expect(sessions.map((entry) => entry.command)).toEqual([
-      'pnpm build',
-      'npm test',
-    ]);
-  });
-
-  it('persists raw log file paths and loads raw output for later analysis', async () => {
+  it('persists latest raw capture logs for later analysis', async () => {
     const paths = await makeTempPaths();
     cleanup.push(paths.homeDir);
     await ensureE2FDirs(paths);
 
-    const stdoutLogFile = path.join(paths.logsDir, 'stdout.log');
-    const stderrLogFile = path.join(paths.logsDir, 'stderr.log');
+    const stdoutLogFile = path.join(paths.logsDir, 'capture.stdout.log');
+    const stderrLogFile = path.join(paths.logsDir, 'capture.stderr.log');
     await fs.writeFile(stdoutLogFile, 'building project...\n', 'utf8');
     await fs.writeFile(
       stderrLogFile,
@@ -91,7 +43,7 @@ describe('session store', () => {
       'utf8',
     );
 
-    await captureFailureSession(
+    await persistLatestRawCapture(
       {
         command: 'pnpm build',
         exitCode: 1,
@@ -104,12 +56,23 @@ describe('session store', () => {
       paths,
     );
 
-    const latest = await loadLatestSession(paths);
-    expect(latest?.stdoutLogFile).toBe(stdoutLogFile);
-    expect(latest?.stderrLogFile).toBe(stderrLogFile);
-    expect(latest?.stderrSnippet).toContain('TS2322');
+    const latest = await loadLatestRawCapture(paths);
+    expect(latest?.metadata.command).toBe('pnpm build');
+    expect(latest?.metadata.exitCode).toBe(1);
+    expect(latest?.stdoutLogFile).toBe(paths.latestStdoutLogFile);
+    expect(latest?.stderrLogFile).toBe(paths.latestStderrLogFile);
+    expect(latest?.stderr).toContain('TS2322');
 
-    const output = await loadCapturedOutput(latest!);
+    const session = buildSession({
+      command: latest!.metadata.command,
+      exitCode: latest!.metadata.exitCode,
+      cwd: latest!.metadata.cwd,
+      shell: latest!.metadata.shell,
+      timestamp: latest!.metadata.timestamp,
+      stdoutLogFile: latest!.stdoutLogFile,
+      stderrLogFile: latest!.stderrLogFile,
+    });
+    const output = await loadCapturedOutput(session);
     expect(output.stderr).toContain('TS2322');
     expect(output.stdout).toContain('building project');
     expect(output.combined).toContain('TS2322');

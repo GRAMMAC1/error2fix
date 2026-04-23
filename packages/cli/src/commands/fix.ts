@@ -1,28 +1,38 @@
 import {
   buildDiagnosis,
   buildProjectContext,
-  loadCapturedOutput,
-  loadLatestSession,
+  buildSession,
+  loadLatestRawCapture,
 } from '@error2fix/core';
 import type { CliFlags, ExplainResult } from '../types.js';
 import { formatDiagnosis, formatJsonPayload } from '../utils/format.js';
 
 export async function buildLatestFailureResult(): Promise<ExplainResult> {
-  const session = await loadLatestSession();
-  if (!session) {
+  const capture = await loadLatestRawCapture();
+  if (!capture) {
     throw new Error(
       'No failure session found. Run `e2f init`, let a command fail, then run `e2f`.',
     );
   }
-  const context = await buildProjectContext(session.cwd);
+  const { metadata } = capture;
+  const context = await buildProjectContext(metadata.cwd);
+  const session = buildSession({
+    command: metadata.command,
+    exitCode: metadata.exitCode,
+    cwd: metadata.cwd,
+    shell: metadata.shell,
+    timestamp: metadata.timestamp,
+    stdoutLogFile: capture.stdoutLogFile,
+    stderrLogFile: capture.stderrLogFile,
+    projectType: context.projectType,
+  });
   session.projectType = context.projectType;
-  const capturedOutput = await loadCapturedOutput(session);
   const diagnosis = buildDiagnosis(
     session,
     context,
     undefined,
     undefined,
-    capturedOutput.combined,
+    capture.stderr || capture.stdout,
   );
   return { session, context, diagnosis };
 }
