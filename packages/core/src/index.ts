@@ -30,6 +30,7 @@ export { failureSessionSchema } from './session/schema.js';
 export {
   ensureE2FDirs,
   listSessions,
+  loadCapturedOutput,
   loadLatestSession,
   saveSession,
 } from './session/store.js';

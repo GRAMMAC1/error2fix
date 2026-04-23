@@ -1,6 +1,7 @@
 import {
   buildDiagnosis,
   buildProjectContext,
+  loadCapturedOutput,
   loadLatestSession,
 } from '@error2fix/core';
 import type { CliFlags, ExplainResult } from '../types.js';
@@ -15,12 +16,13 @@ export async function buildLatestFailureResult(): Promise<ExplainResult> {
   }
   const context = await buildProjectContext(session.cwd);
   session.projectType = context.projectType;
+  const capturedOutput = await loadCapturedOutput(session);
   const diagnosis = buildDiagnosis(
     session,
     context,
     undefined,
     undefined,
-    session.stderrSnippet || session.stdoutSnippet,
+    capturedOutput.combined,
   );
   return { session, context, diagnosis };
 }

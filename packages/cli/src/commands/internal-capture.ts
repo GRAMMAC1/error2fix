@@ -8,11 +8,21 @@ export interface CaptureOptions {
   cwd: string;
   shell: SupportedShell;
   timestamp?: string;
+  stdoutLog?: string;
+  stderrLog?: string;
 }
 
 export async function runInternalCaptureCommand(
   options: CaptureOptions,
 ): Promise<string> {
-  const session = await captureFailureSession(options);
+  const session = await captureFailureSession({
+    command: options.command,
+    exitCode: options.exitCode,
+    cwd: options.cwd,
+    shell: options.shell,
+    timestamp: options.timestamp,
+    stdoutLogFile: options.stdoutLog,
+    stderrLogFile: options.stderrLog,
+  });
   return formatJsonPayload(session);
 }

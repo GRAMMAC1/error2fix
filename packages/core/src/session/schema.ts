@@ -9,6 +9,8 @@ export const failureSessionSchema = z.object({
   timestamp: z.string(),
   stdoutSnippet: z.string(),
   stderrSnippet: z.string(),
+  stdoutLogFile: z.string().optional(),
+  stderrLogFile: z.string().optional(),
   projectType: z.string(),
   env: z.object({
     os: z.string(),

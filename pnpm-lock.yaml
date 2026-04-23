@@ -75,15 +75,16 @@ importers:
 
   packages/mcp:
     dependencies:
-      '@error2fix/core':
-        specifier: workspace:*
-        version: link:../core
       '@modelcontextprotocol/sdk':
         specifier: ^1.18.1
         version: 1.29.0(zod@3.25.76)
       zod:
         specifier: ^3.25.76
         version: 3.25.76
+    devDependencies:
+      '@error2fix/core':
+        specifier: workspace:*
+        version: link:../core
 
 packages:
 

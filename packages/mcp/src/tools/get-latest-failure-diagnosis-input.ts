@@ -3,6 +3,7 @@ import {
   buildProjectContext,
   buildPrompt,
   buildPromptState,
+  loadCapturedOutput,
   loadLatestSession,
   promptStateSchema,
 } from '@error2fix/core';
@@ -106,21 +107,19 @@ export async function getLatestFailureDiagnosisInput(
 
   try {
     const context = await buildProjectContext(session.cwd);
+    const capturedOutput = await loadCapturedOutput(session);
     const diagnosis = buildDiagnosis(
       session,
       context,
       undefined,
       undefined,
-      session.stderrSnippet || session.stdoutSnippet || '',
+      capturedOutput.combined,
     );
     const state = buildPromptState(session, context, {
       category: diagnosis.category,
       summary: diagnosis.summary,
-      errorText:
-        diagnosis.keyErrorSnippet ||
-        session.stderrSnippet ||
-        session.stdoutSnippet ||
-        '',
+      errorText: capturedOutput.combined,
+      displaySnippet: diagnosis.keyErrorSnippet,
     });
     const prompt = buildPrompt(state);
 

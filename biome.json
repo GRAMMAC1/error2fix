@@ -11,5 +11,13 @@
     "formatter": {
       "quoteStyle": "single"
     }
+  },
+  "linter": {
+    "rules": {
+      "style": {
+        "useTemplate": "info",
+        "noNonNullAssertion": "off"
+      }
+    }
   }
 }

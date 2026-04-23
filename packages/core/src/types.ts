@@ -23,6 +23,8 @@ export interface FailureSession {
   timestamp: string;
   stdoutSnippet: string;
   stderrSnippet: string;
+  stdoutLogFile?: string;
+  stderrLogFile?: string;
   projectType: string;
   env: {
     os: string;

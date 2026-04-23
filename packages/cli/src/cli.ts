@@ -27,6 +27,8 @@ interface CaptureOptions extends GlobalOptions {
   exitCode: string;
   cwd: string;
   timestamp?: string;
+  stdoutLog?: string;
+  stderrLog?: string;
 }
 
 function collectFlags(options: GlobalOptions): CliFlags {
@@ -134,6 +136,8 @@ cli
   .option('--exit-code <code>', 'Exit code')
   .option('--cwd <cwd>', 'Working directory')
   .option('--timestamp <timestamp>', 'ISO timestamp')
+  .option('--stdout-log <path>', 'Captured stdout log file')
+  .option('--stderr-log <path>', 'Captured stderr log file')
   .action(async (options: CaptureOptions) => {
     const flags = collectFlags(options);
     await handleCommand(
@@ -144,6 +148,8 @@ cli
           exitCode: Number.parseInt(options.exitCode, 10),
           cwd: options.cwd,
           timestamp: options.timestamp,
+          stdoutLog: options.stdoutLog,
+          stderrLog: options.stderrLog,
         }),
       flags,
       null,

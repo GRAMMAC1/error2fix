@@ -39,6 +39,8 @@ describe('get_latest_failure_diagnosis_input', () => {
 
     const projectDir = path.join(home, 'project');
     await fs.mkdir(projectDir, { recursive: true });
+    const logsDir = path.join(home, '.e2f', 'logs');
+    await fs.mkdir(logsDir, { recursive: true });
     await fs.writeFile(
       path.join(projectDir, 'package.json'),
       JSON.stringify({
@@ -53,6 +55,12 @@ describe('get_latest_failure_diagnosis_input', () => {
       }),
       'utf8',
     );
+    const stderrLogFile = path.join(logsDir, 'latest.stderr.log');
+    await fs.writeFile(
+      stderrLogFile,
+      "src/app.ts:14:7 - error TS2322: Type 'string' is not assignable to type 'number'\n",
+      'utf8',
+    );
 
     const paths = getE2FPaths(path.join(home, '.e2f'));
     await saveSession(
@@ -64,8 +72,8 @@ describe('get_latest_failure_diagnosis_input', () => {
         shell: 'zsh',
         timestamp: '2026-04-21T12:00:00.000Z',
         stdoutSnippet: '',
-        stderrSnippet:
-          "src/app.ts:14:7 - error TS2322: Type 'string' is not assignable to type 'number'",
+        stderrSnippet: '',
+        stderrLogFile,
         projectType: 'vite',
         env: {
           os: 'darwin 24.6.0',

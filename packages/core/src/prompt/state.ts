@@ -148,6 +148,14 @@ function buildRuntimeList(
   return Array.from(runtime);
 }
 
+function createDisplaySnippet(text: string): string {
+  const trimmed = text.trim();
+  if (trimmed.length <= 2000) {
+    return trimmed;
+  }
+  return trimmed.slice(-2000);
+}
+
 export function buildPromptState(
   session: FailureSession,
   context: ProjectContext,
@@ -155,12 +163,15 @@ export function buildPromptState(
     category?: ErrorCategory;
     summary?: string;
     errorText?: string;
+    displaySnippet?: string;
   },
 ): PromptState {
   const errorText =
     options?.errorText?.trim() ||
     session.stderrSnippet ||
     session.stdoutSnippet;
+  const displaySnippet =
+    options?.displaySnippet?.trim() || createDisplaySnippet(errorText || '');
 
   return promptStateSchema.parse({
     command: {
@@ -179,7 +190,7 @@ export function buildPromptState(
       summary: options?.summary,
     },
     error: {
-      snippet: errorText || undefined,
+      snippet: displaySnippet || undefined,
       stack: errorText ? extractStackLines(errorText) : undefined,
       files: errorText ? extractRelatedFiles(errorText) : undefined,
       keywords: errorText ? extractKeywords(errorText) : undefined,

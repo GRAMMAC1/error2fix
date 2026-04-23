@@ -104,7 +104,7 @@ export function buildDiagnosis(
   context: ProjectContext,
   parsedCategory?: Diagnosis['category'],
   parsedSummary?: string,
-  keyErrorSnippet = '',
+  analysisText = '',
 ): Diagnosis {
   const category = parsedCategory ?? categorizeFromCommand(session.command);
   const summary =
@@ -112,10 +112,14 @@ export function buildDiagnosis(
     `Command "${session.command}" exited with code ${session.exitCode} in a ${context.projectType} project.`;
   const likelyCauses = makeLikelyCauses(category, context.framework);
   const suggestedNextSteps = makeNextSteps(category);
+  const keyErrorSnippet = analysisText.trim()
+    ? analysisText.trim().slice(-2000)
+    : '';
   const promptState = buildPromptState(session, context, {
     category,
     summary,
-    errorText: keyErrorSnippet,
+    errorText: analysisText,
+    displaySnippet: keyErrorSnippet,
   });
   const prompt = buildPrompt(promptState);
 

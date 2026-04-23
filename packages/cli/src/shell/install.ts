@@ -8,7 +8,7 @@ import {
 } from '@error2fix/core';
 import type { SupportedShell } from '../types.js';
 import { detectShell } from './detect.js';
-import { getShellInstallTarget, hasManagedSnippet } from './snippets.js';
+import { getShellInstallTarget, upsertManagedSnippet } from './snippets.js';
 
 export interface InitResult {
   shell: SupportedShell;
@@ -57,7 +57,7 @@ export async function initializeShellIntegration(
   if (!configExists) {
     await fs.writeFile(
       paths.configFile,
-      JSON.stringify({ initializedAt: new Date().toISOString() }, null, 2),
+      JSON.stringify({ initializedAt: Date.now() }, null, 2),
     );
   } else {
     await readJsonFile(paths.configFile);
@@ -70,9 +70,9 @@ export async function initializeShellIntegration(
     const current = (await fileExists(target.rcFile))
       ? await fs.readFile(target.rcFile, 'utf8')
       : '';
-    if (!hasManagedSnippet(current)) {
-      const next = `${current.trimEnd()}\n\n${target.snippet}\n`;
-      await fs.writeFile(target.rcFile, next, 'utf8');
+    const next = upsertManagedSnippet(current, target.snippet);
+    if (next.changed) {
+      await fs.writeFile(target.rcFile, next.content, 'utf8');
       shellConfigUpdated = true;
     }
   }
