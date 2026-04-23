@@ -4,7 +4,7 @@ import {
   normalizeLogs,
   rankSignals,
   segmentLogs,
-} from '../log-parser/index.js';
+} from '../parser/index.js';
 import type {
   CoreAnalysisInput,
   CoreErrorSignalSet,

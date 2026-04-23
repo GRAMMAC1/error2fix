@@ -32,7 +32,7 @@ export {
   normalizeLogs,
   rankSignals,
   segmentLogs,
-} from './log-parser/index.js';
+} from './parser/index.js';
 export {
   createPluginRegistry,
   getDefaultPluginRegistry,
