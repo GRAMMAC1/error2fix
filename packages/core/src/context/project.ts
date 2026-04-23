@@ -2,8 +2,28 @@ import { execFile as execFileCallback } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import type { ProjectContext } from '../types.js';
 import { fileExists, readJsonFile } from '../utils/fs.js';
+
+export interface ProjectContext {
+  cwd: string;
+  packageJson: {
+    name?: string;
+    private?: boolean;
+    packageManager?: string;
+    scripts: Record<string, string>;
+    dependencies: string[];
+    devDependencies: string[];
+  } | null;
+  lockfiles: string[];
+  tsconfig: {
+    exists: boolean;
+    compilerOptions: Record<string, unknown>;
+  };
+  configFiles: string[];
+  framework: string;
+  projectType: string;
+  gitBranch: string | null;
+}
 
 const execFile = promisify(execFileCallback);
 

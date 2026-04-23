@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import type { ProjectContext } from '../packages/core/src/context/project.js';
 import {
   aggregateCoreAnalysis,
   buildCoreAnalysisInput,
   getDefaultPluginRegistry,
   runPlugins,
 } from '../packages/core/src/index.js';
-import type {
-  LatestRawCapture,
-  ProjectContext,
-} from '../packages/core/src/types.js';
+import type { LatestRawCapture } from '../packages/core/src/types.js';
 
 describe('plugin runner', () => {
   it('matches built-in plugins against ranked log signals and aggregates results', async () => {

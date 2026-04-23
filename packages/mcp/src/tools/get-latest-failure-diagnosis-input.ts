@@ -1,22 +1,9 @@
-import {
-  buildProjectContext,
-  buildPrompt,
-  diagnoseCapture,
-  loadLatestRawCapture,
-  promptStateSchema,
-} from '@error2fix/core';
+import { diagnoseCapture, loadLatestRawCapture } from '@error2fix/core';
+import type { CoreAnalysis } from '@error2fix/core';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-const formatSchema = z.enum(['state', 'prompt', 'both']);
-
-export const getLatestFailureDiagnosisInputInputSchema = {
-  format: formatSchema
-    .optional()
-    .describe(
-      'Controls whether the tool returns the structured diagnosis state, the generated prompt, or both.',
-    ),
-};
+export const getLatestFailureDiagnosisInputInputSchema = {};
 
 export const toolErrorSchema = z.object({
   code: z.enum([
@@ -31,33 +18,15 @@ export const toolErrorSchema = z.object({
 
 export const getLatestFailureDiagnosisInputOutputSchema = {
   ok: z.boolean(),
-  data: z
-    .object({
-      sessionId: z.string(),
-      timestamp: z.string(),
-      format: formatSchema,
-      state: promptStateSchema.optional(),
-      prompt: z.string().optional(),
-    })
-    .optional(),
+  data: z.unknown().optional(),
   error: toolErrorSchema.optional(),
 };
 
-export type GetLatestFailureDiagnosisInputArgs = {
-  format?: 'state' | 'prompt' | 'both';
-};
+export type GetLatestFailureDiagnosisInputArgs = Record<string, never>;
 
 export const getLatestFailureDiagnosisInputResultSchema = z.object({
   ok: z.boolean(),
-  data: z
-    .object({
-      sessionId: z.string(),
-      timestamp: z.string(),
-      format: formatSchema,
-      state: promptStateSchema.optional(),
-      prompt: z.string().optional(),
-    })
-    .optional(),
+  data: z.unknown().optional(),
   error: toolErrorSchema.optional(),
 });
 
@@ -70,28 +39,20 @@ function makeTextContent(result: GetLatestFailureDiagnosisInputResult): string {
     return result.error?.message ?? 'Unknown error';
   }
 
-  const parts = [
-    `sessionId: ${result.data?.sessionId ?? 'unknown'}`,
-    `timestamp: ${result.data?.timestamp ?? 'unknown'}`,
-    `format: ${result.data?.format ?? 'unknown'}`,
-  ];
-
-  if (result.data?.state) {
-    parts.push('state available');
+  const analysis = result.data as CoreAnalysis | undefined;
+  if (!analysis) {
+    return 'analysis available';
   }
-  if (result.data?.prompt) {
-    parts.push('prompt available');
-  }
-
-  return parts.join('\n');
+  return [
+    `summary: ${analysis.summary}`,
+    `keySnippet: ${analysis.keySnippet ?? 'none'}`,
+    `relatedFiles: ${analysis.relatedFiles.join(', ') || 'none'}`,
+  ].join('\n');
 }
 
 export async function getLatestFailureDiagnosisInput(
-  args: GetLatestFailureDiagnosisInputArgs = {},
+  _args: GetLatestFailureDiagnosisInputArgs = {},
 ): Promise<GetLatestFailureDiagnosisInputResult> {
-  const format = args.format ?? 'both';
-
-  // TODO use independent method to retrieve error stack traces.
   const capture = await loadLatestRawCapture();
   if (!capture) {
     return {
@@ -104,23 +65,11 @@ export async function getLatestFailureDiagnosisInput(
   }
 
   try {
-    const context = await buildProjectContext(capture.metadata.cwd);
-    const { session, promptState, prompt } = await diagnoseCapture(
-      capture,
-      context,
-    );
-    const state = promptStateSchema.parse(promptState);
-    const renderedPrompt = buildPrompt(state);
+    const analysis = await diagnoseCapture(capture);
 
     return getLatestFailureDiagnosisInputResultSchema.parse({
       ok: true,
-      data: {
-        sessionId: session.id,
-        timestamp: session.timestamp,
-        format,
-        state: format === 'prompt' ? undefined : state,
-        prompt: format === 'state' ? undefined : renderedPrompt || prompt,
-      },
+      data: analysis,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -142,7 +91,7 @@ export function registerGetLatestFailureDiagnosisInputTool(
     {
       title: 'Get Latest Failure Diagnosis Input',
       description:
-        'Return the latest captured terminal failure as structured diagnosis input for downstream AI analysis.',
+        'Return the latest captured terminal failure as aggregated CoreAnalysis output.',
       inputSchema: getLatestFailureDiagnosisInputInputSchema,
       outputSchema: getLatestFailureDiagnosisInputOutputSchema,
     },

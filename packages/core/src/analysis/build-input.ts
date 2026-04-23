@@ -1,11 +1,12 @@
 import os from 'node:os';
+import type { ProjectContext } from '../context/project.js';
 import {
   extractSignals,
   normalizeLogs,
   rankSignals,
   segmentLogs,
 } from '../log-parser/index.js';
-import type { LatestRawCapture, ProjectContext } from '../types.js';
+import type { LatestRawCapture } from '../types.js';
 import type {
   CoreAnalysisInput,
   CoreErrorSignalSet,

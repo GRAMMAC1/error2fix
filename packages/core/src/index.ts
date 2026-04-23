@@ -1,9 +1,6 @@
 export type {
   CliFlags,
-  ExplainResult,
-  FailureSession,
   LatestRawCapture,
-  ProjectContext,
   RawCaptureMetadata,
   SupportedShell,
 } from './types.js';
@@ -25,6 +22,7 @@ export type {
   PluginRegistry,
   PluginResult,
 } from './types/plugin.js';
+export type { ProjectContext } from './context/project.js';
 
 export { buildProjectContext, readLogFile } from './context/project.js';
 export { aggregateCoreAnalysis } from './analysis/aggregate.js';
@@ -43,14 +41,8 @@ export {
   registerPlugin,
 } from './plugin/registry.js';
 export { runPlugins } from './plugin/run.js';
-export { buildPrompt } from './prompt/generator.js';
-export { buildPromptState, promptStateSchema } from './prompt/state.js';
-export { buildSession } from './session/capture.js';
 export { failureSessionSchema } from './session/schema.js';
-export {
-  ensureE2FDirs,
-  loadCapturedOutput,
-} from './session/store.js';
+export { ensureE2FDirs } from './session/store.js';
 export { detectPackageManager } from './utils/env.js';
 export {
   fileExists,

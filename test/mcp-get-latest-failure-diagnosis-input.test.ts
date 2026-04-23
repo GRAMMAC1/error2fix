@@ -32,7 +32,7 @@ describe('get_latest_failure_diagnosis_input', () => {
     expect(result.error?.code).toBe('NO_FAILURE_SESSION');
   });
 
-  it('returns structured state and prompt for the latest failure session', async () => {
+  it('returns aggregated CoreAnalysis for the latest failure session', async () => {
     const home = await fs.mkdtemp(path.join(os.tmpdir(), 'e2f-mcp-full-'));
     cleanup.push(home);
     process.env.HOME = home;
@@ -73,16 +73,20 @@ describe('get_latest_failure_diagnosis_input', () => {
       stderrLogFile,
     });
 
-    const result = await getLatestFailureDiagnosisInput({ format: 'both' });
+    const result = await getLatestFailureDiagnosisInput({});
     expect(() =>
       getLatestFailureDiagnosisInputResultSchema.parse(result),
     ).not.toThrow();
     expect(result.ok).toBe(true);
-    expect(result.data?.format).toBe('both');
-    expect(result.data?.state?.command.raw).toBe('pnpm build');
-    expect(result.data?.state?.error.keywords).toContain('TS2322');
-    expect(result.data?.prompt).toContain(
-      'You are diagnosing a failed developer terminal command.',
-    );
+    const analysis = result.data as {
+      summary: string;
+      keySnippet?: string;
+      relatedFiles: string[];
+      likelyCauses: string[];
+    };
+    expect(analysis.summary.length).toBeGreaterThan(0);
+    expect(analysis.keySnippet).toContain('TS2322');
+    expect(analysis.relatedFiles).toContain('src/app.ts');
+    expect(analysis.likelyCauses.length).toBeGreaterThan(0);
   });
 });

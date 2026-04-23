@@ -1,77 +1,36 @@
-import type {
-  ExplainResult,
-  FailureSession,
-  ProjectContext,
-} from '../types.js';
+import type { CoreAnalysis, SupportedShell } from '../types.js';
 import { getColors, printKeyValue } from './terminal.js';
 
-export function formatContext(
-  session: FailureSession,
-  context: ProjectContext,
-  color = true,
-): string {
+export function formatDiagnosis(result: CoreAnalysis, color = true): string {
   const c = getColors(color);
-  const lines = [
-    c.bold(c.cyan('Latest Failure Context')),
-    printKeyValue('Command', session.command),
-    printKeyValue('Exit code', String(session.exitCode)),
-    printKeyValue('CWD', session.cwd),
-    printKeyValue('Shell', session.shell),
-    printKeyValue('Timestamp', session.timestamp),
-    printKeyValue('Project type', context.projectType),
-    printKeyValue('Framework', context.framework),
-    printKeyValue('Git branch', context.gitBranch ?? 'unknown'),
-    printKeyValue('Lockfiles', context.lockfiles.join(', ') || 'none'),
-    printKeyValue('Config files', context.configFiles.join(', ') || 'none'),
-  ];
-  return lines.join('\n');
-}
-
-export function formatDiagnosis(result: ExplainResult, color = true): string {
-  const c = getColors(color);
-  const { session, context, analysis, prompt } = result;
+  const os = [
+    result.host.os.platform,
+    result.host.os.release,
+    result.host.os.arch,
+  ]
+    .filter(Boolean)
+    .join(' ');
   return [
-    formatContext(session, context, color),
-    '',
     c.bold(c.green('Diagnosis')),
-    printKeyValue('Structured summary', analysis.summary),
+    printKeyValue('Host', os || 'unknown'),
+    printKeyValue('Shell', result.host.shell ?? 'unknown'),
+    printKeyValue('Structured summary', result.summary),
     printKeyValue(
       'Key error snippet',
-      analysis.keySnippet || 'No error snippet captured',
+      result.keySnippet || 'No error snippet captured',
     ),
-    printKeyValue('Related files', analysis.relatedFiles.join(', ') || 'none'),
+    printKeyValue('Related files', result.relatedFiles.join(', ') || 'none'),
     '',
     c.bold(c.yellow('Likely Causes')),
-    ...analysis.likelyCauses.map(
+    ...result.likelyCauses.map(
       (cause: string, index: number) => `${index + 1}. ${cause}`,
     ),
     '',
     c.bold(c.yellow('Suggested Next Steps')),
-    ...analysis.nextSteps.map(
+    ...result.nextSteps.map(
       (step: string, index: number) => `${index + 1}. ${step}`,
     ),
-    '',
-    c.bold(c.magenta('Generated Prompt')),
-    prompt,
   ].join('\n');
-}
-
-export function formatHistory(
-  sessions: FailureSession[],
-  color = true,
-): string {
-  const c = getColors(color);
-  const lines = [c.bold(c.cyan('Recent Failure Sessions'))];
-  if (sessions.length === 0) {
-    lines.push('No captured sessions found.');
-    return lines.join('\n');
-  }
-  for (const session of sessions) {
-    lines.push(
-      `${session.timestamp}  [${session.shell}]  exit=${session.exitCode}  ${session.command}`,
-    );
-  }
-  return lines.join('\n');
 }
 
 export function formatChangedFiles(

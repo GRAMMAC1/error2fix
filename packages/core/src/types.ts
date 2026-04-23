@@ -6,25 +6,6 @@ export interface CliFlags {
   debug?: boolean;
 }
 
-export interface FailureSession {
-  id: string;
-  command: string;
-  exitCode: number;
-  cwd: string;
-  shell: SupportedShell;
-  timestamp: string;
-  stdoutSnippet: string;
-  stderrSnippet: string;
-  stdoutLogFile?: string;
-  stderrLogFile?: string;
-  projectType: string;
-  env: {
-    os: string;
-    nodeVersion: string;
-    packageManager: string;
-  };
-}
-
 export interface RawCaptureMetadata {
   command: string;
   exitCode: number;
@@ -39,34 +20,4 @@ export interface LatestRawCapture {
   stderr: string;
   stdoutLogFile: string;
   stderrLogFile: string;
-}
-
-export interface ProjectContext {
-  cwd: string;
-  packageJson: {
-    name?: string;
-    private?: boolean;
-    packageManager?: string;
-    scripts: Record<string, string>;
-    dependencies: string[];
-    devDependencies: string[];
-  } | null;
-  lockfiles: string[];
-  tsconfig: {
-    exists: boolean;
-    compilerOptions: Record<string, unknown>;
-  };
-  configFiles: string[];
-  framework: string;
-  projectType: string;
-  gitBranch: string | null;
-}
-
-export interface ExplainResult {
-  session: FailureSession;
-  context: ProjectContext;
-  input: import('./types/core.js').CoreAnalysisInput;
-  analysis: import('./types/core.js').CoreAnalysis;
-  promptState: import('./prompt/state.js').PromptState;
-  prompt: string;
 }

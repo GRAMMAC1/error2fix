@@ -1,7 +1,5 @@
 export type {
   CliFlags,
-  ExplainResult,
-  FailureSession,
-  ProjectContext,
   SupportedShell,
 } from '@error2fix/core';
+export type { CoreAnalysis } from '@error2fix/core';
