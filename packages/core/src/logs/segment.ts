@@ -16,7 +16,10 @@ function isBoundaryLine(line: string): boolean {
   );
 }
 
-function segmentLines(source: LogSegment['source'], lines: string[]): LogSegment[] {
+function segmentLines(
+  source: LogSegment['source'],
+  lines: string[],
+): LogSegment[] {
   const segments: LogSegment[] = [];
   let current: string[] = [];
   let startLine = 0;

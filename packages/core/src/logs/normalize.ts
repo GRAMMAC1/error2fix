@@ -1,4 +1,3 @@
-/* eslint-disable no-control-regex */
 import type { NormalizedLog, RawLogInput } from './types.js';
 
 // biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences intentionally contain control characters.
@@ -40,7 +39,11 @@ function isNoiseLine(line: string): boolean {
     return true;
   }
 
-  if (/^(?:downloading|fetching|resolving|building|bundling)\b.+\.{2,}$/i.test(trimmed)) {
+  if (
+    /^(?:downloading|fetching|resolving|building|bundling)\b.+\.{2,}$/i.test(
+      trimmed,
+    )
+  ) {
     return true;
   }
 

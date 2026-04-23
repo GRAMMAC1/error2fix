@@ -22,7 +22,7 @@
 - Typecheck: `pnpm typecheck`
 - Format: `pnpm format`
 - Biome check: `pnpm check`
-- ESLint: `pnpm lint`
+- Biome lint: `pnpm lint`
 
 ## Repository Structure
 
@@ -37,8 +37,7 @@
 - Prefer `pnpm` for all package management and script execution.
 - Keep all `dist/` directories treated as generated output. Do not hand-edit generated files.
 - This project uses:
-  - Biome for formatting and repository-wide checks
-  - ESLint for TypeScript and Node.js linting
+  - Biome for formatting and linting
   - Vitest for unit and e2e tests
   - `simple-git-hooks` + `lint-staged` for pre-commit checks on staged files
 

@@ -84,7 +84,10 @@ function extractStackLines(segments: LogSegment[]): string[] {
 }
 
 function normalizeFileMatch(match: string): string {
-  return match.trim().replace(/[):,]+$/g, '').replace(/:\d+(?::\d+)?$/g, '');
+  return match
+    .trim()
+    .replace(/[):,]+$/g, '')
+    .replace(/:\d+(?::\d+)?$/g, '');
 }
 
 function extractRelatedFiles(segments: LogSegment[]): string[] {
