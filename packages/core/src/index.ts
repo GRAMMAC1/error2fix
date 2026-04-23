@@ -14,12 +14,9 @@ export {
   buildProjectContext,
   readLogFile,
 } from './context/project.js';
+export { loadLatestRawCapture } from './utils/store.js';
 export { categorizeFromCommand } from './parsers/category.js';
 export { parseLogContent } from './parsers/logfile.js';
-export {
-  loadLatestRawCapture,
-  persistLatestRawCapture,
-} from './capture/store.js';
 export {
   buildDiagnosis,
   buildPrompt,
@@ -38,7 +35,12 @@ export {
   loadCapturedOutput,
 } from './session/store.js';
 export { detectPackageManager } from './utils/env.js';
-export { fileExists, readJsonFile } from './utils/fs.js';
+export {
+  fileExists,
+  readJsonFile,
+  readFileIfPresent,
+  removeIfPresent,
+} from './utils/fs.js';
 export { shortHash } from './utils/hash.js';
 export { toJson } from './utils/json.js';
 export type { E2FPaths } from './utils/paths.js';

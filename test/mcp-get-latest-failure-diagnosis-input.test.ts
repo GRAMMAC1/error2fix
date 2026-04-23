@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { persistLatestRawCapture } from '../packages/core/src/capture/store.js';
+import { persistLatestRawCapture } from '../packages/cli/src/capture/store.js';
 import { getE2FPaths } from '../packages/core/src/utils/paths.js';
 import {
   getLatestFailureDiagnosisInput,
@@ -64,17 +64,14 @@ describe('get_latest_failure_diagnosis_input', () => {
       'utf8',
     );
 
-    await persistLatestRawCapture(
-      {
-        command: 'pnpm build',
-        exitCode: 1,
-        cwd: projectDir,
-        shell: 'zsh',
-        timestamp: '2026-04-21T12:00:00.000Z',
-        stderrLogFile,
-      },
-      paths,
-    );
+    await persistLatestRawCapture({
+      command: 'pnpm build',
+      exitCode: 1,
+      cwd: projectDir,
+      shell: 'zsh',
+      timestamp: '2026-04-21T12:00:00.000Z',
+      stderrLogFile,
+    });
 
     const result = await getLatestFailureDiagnosisInput({ format: 'both' });
     expect(() =>
