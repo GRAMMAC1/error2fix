@@ -1,6 +1,6 @@
 # error2fix
 
-`error2fix` is a TypeScript CLI for post-failure terminal diagnosis. After a command fails in your shell, you run `e2f` and get a structured summary, project context, likely failure category, next steps, and an AI-ready prompt.
+`error2fix` is a TypeScript CLI for post-failure terminal diagnosis. After a command fails in your shell, you run `e2f` and get a structured summary, project context, next steps, and an AI-ready prompt.
 
 ## Why this exists
 
@@ -40,19 +40,10 @@ Alias of `e2f fix`. Loads the latest captured failure session, enriches it with 
 - project type detection
 - relevant environment info
 - structured error summary
-- generated diagnosis prompt
 
 ### `e2f fix`
 
 Prints the full diagnosis view for the latest captured failure session.
-
-### `e2f prompt`
-
-Prints only the generated AI-ready diagnosis prompt.
-
-### `e2f context`
-
-Prints the raw captured session plus enriched project context for the latest failure.
 
 ### `e2f explain <logfile>`
 
@@ -203,4 +194,4 @@ The publish flow uses a repo-local npm cache under `.npm-cache/`, so it does not
 - Shell integration captures command metadata reliably first.
 - Full stdout/stderr capture is intentionally conservative in the MVP.
 - `e2f explain <logfile>` is the stronger path when users have full logs.
-- AI provider integration is intentionally abstractable later; the MVP defaults to prompt generation only.
+- AI provider integration is intentionally abstractable later; the CLI currently focuses on structured local diagnosis output.
