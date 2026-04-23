@@ -1,9 +1,7 @@
 import {
-  buildDiagnosis,
   buildProjectContext,
   buildPrompt,
-  buildPromptState,
-  buildSession,
+  diagnoseCapture,
   loadLatestRawCapture,
   promptStateSchema,
 } from '@error2fix/core';
@@ -106,30 +104,9 @@ export async function getLatestFailureDiagnosisInput(
   }
 
   try {
-    const session = buildSession({
-      command: capture.metadata.command,
-      exitCode: capture.metadata.exitCode,
-      cwd: capture.metadata.cwd,
-      shell: capture.metadata.shell,
-      timestamp: capture.metadata.timestamp,
-      stdoutLogFile: capture.stdoutLogFile,
-      stderrLogFile: capture.stderrLogFile,
-    });
-    const context = await buildProjectContext(session.cwd);
-    session.projectType = context.projectType;
-    const diagnosis = buildDiagnosis(
-      session,
-      context,
-      undefined,
-      undefined,
-      capture.stderr || capture.stdout,
-    );
-    const state = buildPromptState(session, context, {
-      category: diagnosis.category,
-      summary: diagnosis.summary,
-      errorText: capture.stderr || capture.stdout,
-      displaySnippet: diagnosis.keyErrorSnippet,
-    });
+    const context = await buildProjectContext(capture.metadata.cwd);
+    const { session, diagnosis } = await diagnoseCapture(capture, context);
+    const state = promptStateSchema.parse(diagnosis.promptState);
     const prompt = buildPrompt(state);
 
     return getLatestFailureDiagnosisInputResultSchema.parse({

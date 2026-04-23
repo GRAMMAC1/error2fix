@@ -28,13 +28,25 @@ export type {
   PluginResult,
 } from './types/plugin.js';
 
-export {
-  buildProjectContext,
-  readLogFile,
-} from './context/project.js';
+export { buildProjectContext, readLogFile } from './context/project.js';
+export { aggregateCoreAnalysis } from './analysis/aggregate.js';
+export { buildCoreAnalysisInput } from './analysis/build-input.js';
+export { diagnoseCapture } from './analysis/diagnose.js';
 export { loadLatestRawCapture } from './utils/store.js';
 export { categorizeFromCommand } from './parsers/category.js';
 export { parseLogContent } from './parsers/logfile.js';
+export {
+  extractSignals,
+  normalizeLogs,
+  rankSignals,
+  segmentLogs,
+} from './log-parser/index.js';
+export {
+  createPluginRegistry,
+  getDefaultPluginRegistry,
+  registerPlugin,
+} from './plugin/registry.js';
+export { runPlugins } from './plugin/run.js';
 export {
   buildDiagnosis,
   buildPrompt,

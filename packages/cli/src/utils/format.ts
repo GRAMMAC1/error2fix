@@ -35,7 +35,9 @@ export function formatDiagnosis(result: ExplainResult, color = true): string {
     '',
     c.bold(c.green('Diagnosis')),
     printKeyValue('Structured summary', diagnosis.summary),
-    printKeyValue('Likely category', diagnosis.category),
+    ...(diagnosis.category !== 'unknown'
+      ? [printKeyValue('Likely category', diagnosis.category)]
+      : []),
     printKeyValue(
       'Key error snippet',
       diagnosis.keyErrorSnippet || 'No error snippet captured',
