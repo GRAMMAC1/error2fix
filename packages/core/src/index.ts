@@ -9,6 +9,24 @@ export type {
   RawCaptureMetadata,
   SupportedShell,
 } from './types.js';
+export type {
+  CoreAnalysis,
+  CoreAnalysisInput,
+  CoreErrorSignalSet,
+  CoreHostInfo,
+  CorePromptGoal,
+  CorePromptState,
+  CoreRawCapture,
+  CoreRawCaptureMetadata,
+  CoreWorkspaceSnapshot,
+} from './types/core.js';
+export type {
+  Error2FixPlugin,
+  PluginContextEntry,
+  PluginMeta,
+  PluginRegistry,
+  PluginResult,
+} from './types/plugin.js';
 
 export {
   buildProjectContext,
