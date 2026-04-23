@@ -1,4 +1,7 @@
-import type { LatestRawCapture, RawCaptureMetadata } from '../types.js';
+import type {
+  LatestRawCapture,
+  RawCaptureMetadata,
+} from '../types/metadata.js';
 import { readFileIfPresent } from './fs.js';
 import { getE2FPaths } from './paths.js';
 

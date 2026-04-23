@@ -3,7 +3,7 @@ export type {
   LatestRawCapture,
   RawCaptureMetadata,
   SupportedShell,
-} from './types.js';
+} from './types/metadata.js';
 export type {
   CoreAnalysis,
   CoreAnalysisInput,

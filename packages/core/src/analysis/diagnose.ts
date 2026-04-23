@@ -1,8 +1,8 @@
 import { buildProjectContext } from '../context/project.js';
 import { getDefaultPluginRegistry } from '../plugin/registry.js';
 import { runPlugins } from '../plugin/run.js';
-import type { LatestRawCapture } from '../types.js';
 import type { CoreAnalysis } from '../types/core.js';
+import type { LatestRawCapture } from '../types/metadata.js';
 import type { PluginRegistry } from '../types/plugin.js';
 import { aggregateCoreAnalysis } from './aggregate.js';
 import { buildCoreAnalysisInput } from './build-input.js';

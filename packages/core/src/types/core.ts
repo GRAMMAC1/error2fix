@@ -1,4 +1,4 @@
-import type { SupportedShell } from '../types.js';
+import type { SupportedShell } from './metadata.js';
 
 /**
  * Operating system details that are independent from any language runtime.

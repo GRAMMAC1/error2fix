@@ -1,5 +1,5 @@
 import os from 'node:os';
-import type { SupportedShell } from '../types.js';
+import type { SupportedShell } from '../types/metadata.js';
 import { detectPackageManager } from '../utils/env.js';
 import { shortHash } from '../utils/hash.js';
 import { type FailureSessionRecord, failureSessionSchema } from './schema.js';

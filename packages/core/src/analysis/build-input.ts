@@ -6,13 +6,13 @@ import {
   rankSignals,
   segmentLogs,
 } from '../log-parser/index.js';
-import type { LatestRawCapture } from '../types.js';
 import type {
   CoreAnalysisInput,
   CoreErrorSignalSet,
   CoreRawCapture,
   CoreWorkspaceSnapshot,
 } from '../types/core.js';
+import type { LatestRawCapture } from '../types/metadata.js';
 
 function buildWorkspaceSnapshot(
   context: ProjectContext,

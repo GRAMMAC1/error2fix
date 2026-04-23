@@ -6,7 +6,7 @@ import {
   getDefaultPluginRegistry,
   runPlugins,
 } from '../packages/core/src/index.js';
-import type { LatestRawCapture } from '../packages/core/src/types.js';
+import type { LatestRawCapture } from '../packages/core/src/types/metadata.js';
 
 describe('plugin runner', () => {
   it('matches built-in plugins against ranked log signals and aggregates results', async () => {
