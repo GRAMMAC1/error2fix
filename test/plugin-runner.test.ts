@@ -64,6 +64,8 @@ describe('plugin runner', () => {
         (result) => result.plugin === 'builtin-typescript' && result.matched,
       ),
     ).toBe(true);
+    expect(analysis.host.shell).toBe('zsh');
+    expect(analysis.host.os.platform.length).toBeGreaterThan(0);
     expect(analysis.summary).toContain('TypeScript');
     expect(analysis.relatedFiles).toContain('src/app.ts');
     expect(analysis.nextSteps.length).toBeGreaterThan(0);

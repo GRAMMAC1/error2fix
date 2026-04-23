@@ -275,6 +275,11 @@ export interface CorePromptState {
  */
 export interface CoreAnalysis {
   /**
+   * Host details carried forward into the final aggregated analysis result.
+   */
+  host: CoreHostInfo;
+
+  /**
    * Short analysis summary produced by the core pipeline.
    */
   summary: string;

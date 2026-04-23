@@ -86,6 +86,7 @@ export function aggregateCoreAnalysis(
   const leadResult = pickLeadResult(pluginResults);
 
   return {
+    host: input.capture.host,
     summary: buildSummary(input, leadResult),
     keySnippet: leadResult?.keySnippet ?? input.signals.snippet,
     likelyCauses: buildLikelyCauses(input, pluginResults),
