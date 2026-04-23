@@ -3,8 +3,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { clearE2FHooks } from '../packages/cli/src/commands/clear.js';
-import { ensureE2FDirs } from '../packages/core/src/session/store.js';
 import { getE2FPaths } from '../packages/core/src/utils/paths.js';
+import { ensureE2FDirs } from '../packages/core/src/utils/store.js';
 
 describe('clearE2FHooks', () => {
   const cleanup: string[] = [];

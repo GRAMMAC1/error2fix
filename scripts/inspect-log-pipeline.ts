@@ -6,7 +6,7 @@ import {
   normalizeLogs,
   rankSignals,
   segmentLogs,
-} from '../packages/core/src/log-parser/index.js';
+} from '../packages/core/src/parser/index.js';
 
 interface InspectResult {
   file: string;

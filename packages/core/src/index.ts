@@ -26,7 +26,6 @@ export type {
 export { aggregateCoreAnalysis } from './analysis/aggregate.js';
 export { buildCoreAnalysisInput } from './analysis/build-input.js';
 export { diagnoseCapture } from './analysis/diagnose.js';
-export { loadLatestRawCapture } from './utils/store.js';
 export {
   extractSignals,
   normalizeLogs,
@@ -39,10 +38,9 @@ export {
   registerPlugin,
 } from './plugin/registry.js';
 export { runPlugins } from './plugin/run.js';
-export { failureSessionSchema } from './session/schema.js';
-export { ensureE2FDirs } from './session/store.js';
 export { detectPackageManager } from './utils/env.js';
 export { detectGitBranch } from './utils/git.js';
+export { ensureE2FDirs, loadLatestRawCapture } from './utils/store.js';
 export {
   fileExists,
   readJsonFile,
