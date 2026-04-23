@@ -2,9 +2,7 @@ import os from 'node:os';
 import type { SupportedShell } from '../types.js';
 import { detectPackageManager } from '../utils/env.js';
 import { shortHash } from '../utils/hash.js';
-import type { E2FPaths } from '../utils/paths.js';
 import { type FailureSessionRecord, failureSessionSchema } from './schema.js';
-import { saveSession } from './store.js';
 
 export interface CaptureInput {
   command: string;
@@ -40,14 +38,5 @@ export function buildSession(input: CaptureInput): FailureSessionRecord {
       packageManager: detectPackageManager(),
     },
   });
-  return session;
-}
-
-export async function captureFailureSession(
-  input: CaptureInput,
-  paths?: E2FPaths,
-): Promise<FailureSessionRecord> {
-  const session = buildSession(input);
-  await saveSession(session, paths);
   return session;
 }

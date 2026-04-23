@@ -47,12 +47,7 @@ export async function initializeShellIntegration(
   const paths = getE2FPaths();
   await ensureE2FDirs(paths);
 
-  const createdDirectories = [
-    paths.homeDir,
-    paths.sessionsDir,
-    paths.logsDir,
-    paths.cacheDir,
-  ];
+  const createdDirectories = [paths.homeDir, paths.logsDir, paths.cacheDir];
   const configExists = await fileExists(paths.configFile);
   if (!configExists) {
     await fs.writeFile(

@@ -18,7 +18,7 @@ Running `e2f-mcp` starts the MCP server over stdio.
 
 ## What it does
 
-This server reads the latest captured `error2fix` failure session from `~/.e2f/sessions/latest.json` and exposes diagnosis-oriented tools for AI clients.
+This server reads the latest captured `error2fix` raw logs from `~/.e2f/logs/` and exposes diagnosis-oriented tools for AI clients.
 
 Current tool:
 

@@ -40,7 +40,7 @@ describe('clearE2FHooks', () => {
 
     const paths = getE2FPaths(path.join(tempDir, '.e2f'));
     await ensureE2FDirs(paths);
-    await fs.writeFile(paths.latestSessionFile, '{"ok":true}\n', 'utf8');
+    await fs.writeFile(paths.latestStderrLogFile, 'stderr\n', 'utf8');
 
     const result = await clearE2FHooks({
       shellTargets: [{ shell: 'zsh', rcFile }],

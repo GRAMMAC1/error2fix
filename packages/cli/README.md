@@ -93,32 +93,8 @@ e2f clear
 ```text
 ~/.e2f/
   config.json
-  sessions/
-    latest.json
-    <timestamp>-<hash>.json
   logs/
   cache/
-```
-
-Failure sessions follow this schema:
-
-```json
-{
-  "id": "string",
-  "command": "npm run build",
-  "exitCode": 1,
-  "cwd": "/Users/foo/project",
-  "shell": "zsh",
-  "timestamp": "2026-04-21T12:00:00.000Z",
-  "stdoutSnippet": "",
-  "stderrSnippet": "",
-  "projectType": "nextjs",
-  "env": {
-    "os": "",
-    "nodeVersion": "",
-    "packageManager": ""
-  }
-}
 ```
 
 ## Shell hook snippets

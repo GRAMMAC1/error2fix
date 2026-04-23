@@ -31,14 +31,11 @@ export {
   extractStackLines,
   promptStateSchema,
 } from './prompt/state.js';
-export { buildSession, captureFailureSession } from './session/capture.js';
+export { buildSession } from './session/capture.js';
 export { failureSessionSchema } from './session/schema.js';
 export {
   ensureE2FDirs,
-  listSessions,
   loadCapturedOutput,
-  loadLatestSession,
-  saveSession,
 } from './session/store.js';
 export { detectPackageManager } from './utils/env.js';
 export { fileExists, readJsonFile } from './utils/fs.js';
