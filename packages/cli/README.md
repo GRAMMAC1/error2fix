@@ -171,23 +171,29 @@ pnpm build
 pnpm test
 ```
 
-## Publishing the CLI
+## Publishing
 
-The publishable npm package lives in [packages/cli](/Users/grammac/github/error2fix/packages/cli).
+This package is released from the workspace root with Changesets.
 
-To verify the package contents before publishing:
-
-```bash
-pnpm pack:cli
-```
-
-To publish the public npm package:
+Create a changeset:
 
 ```bash
-pnpm publish:cli
+pnpm changeset
 ```
 
-The publish flow uses a repo-local npm cache under `.npm-cache/`, so it does not depend on the health or permissions of `~/.npm`.
+Version all publishable packages:
+
+```bash
+pnpm version:packages
+```
+
+Publish the release:
+
+```bash
+pnpm release
+```
+
+`@error2fix/cli` and `@error2fix/mcp` are configured as a fixed version group, so releases keep their versions aligned.
 
 ## Notes for the MVP
 
