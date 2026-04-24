@@ -1,10 +1,10 @@
 import { createRequire } from 'node:module';
+import type { CliFlags } from '@error2fix/core';
 import { cac } from 'cac';
 import { runClearCommand } from './commands/clear.js';
 import { runFixCommand } from './commands/fix.js';
 import { runInitCommand } from './commands/init.js';
 import { runInternalCaptureCommand } from './commands/internal-capture.js';
-import type { CliFlags } from './types.js';
 import {
   maybePromptForUpgrade,
   shouldCheckForUpdates,

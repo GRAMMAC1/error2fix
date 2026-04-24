@@ -1,5 +1,5 @@
+import type { SupportedShell } from '@error2fix/core';
 import { persistLatestRawCapture } from '../capture/store.js';
-import type { SupportedShell } from '../types.js';
 import { formatJsonPayload } from '../utils/format.js';
 
 export interface CaptureOptions {

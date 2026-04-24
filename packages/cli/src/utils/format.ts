@@ -1,4 +1,4 @@
-import type { CoreAnalysis, SupportedShell } from '../types.js';
+import type { CoreAnalysis } from '@error2fix/core';
 import { getColors, printKeyValue } from './terminal.js';
 
 export function formatDiagnosis(result: CoreAnalysis, color = true): string {

@@ -6,7 +6,7 @@ import {
   getE2FPaths,
   readJsonFile,
 } from '@error2fix/core';
-import type { SupportedShell } from '../types.js';
+import type { SupportedShell } from '@error2fix/core';
 import { detectShell } from './detect.js';
 import { getShellInstallTarget, upsertManagedSnippet } from './snippets.js';
 

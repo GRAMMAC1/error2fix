@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import readline from 'node:readline';
 import { promisify } from 'node:util';
 import { getE2FPaths, readJsonFile } from '@error2fix/core';
-import type { CliFlags } from './types.js';
+import type { CliFlags } from '@error2fix/core';
 
 const require = createRequire(import.meta.url);
 const packageJson = require('../package.json') as {

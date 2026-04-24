@@ -1,11 +1,16 @@
 import fs from 'node:fs/promises';
-import { type E2FPaths, fileExists, getE2FPaths } from '@error2fix/core';
+import {
+  type CliFlags,
+  type E2FPaths,
+  type SupportedShell,
+  fileExists,
+  getE2FPaths,
+} from '@error2fix/core';
 import {
   getShellRcPath,
   hasManagedSnippet,
   stripManagedSnippet,
 } from '../shell/snippets.js';
-import type { CliFlags, SupportedShell } from '../types.js';
 import { formatClearResult, formatJsonPayload } from '../utils/format.js';
 
 export interface ClearResult {

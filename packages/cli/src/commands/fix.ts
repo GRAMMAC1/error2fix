@@ -1,5 +1,9 @@
-import { diagnoseCapture, loadLatestRawCapture } from '@error2fix/core';
-import type { CliFlags, CoreAnalysis } from '../types.js';
+import {
+  type CliFlags,
+  type CoreAnalysis,
+  diagnoseCapture,
+  loadLatestRawCapture,
+} from '@error2fix/core';
 import { formatDiagnosis, formatJsonPayload } from '../utils/format.js';
 
 export async function buildLatestFailureResult(): Promise<CoreAnalysis> {

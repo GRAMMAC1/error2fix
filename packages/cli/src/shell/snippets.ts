@@ -1,6 +1,6 @@
 import os from 'node:os';
 import path from 'node:path';
-import type { SupportedShell } from '../types.js';
+import type { SupportedShell } from '@error2fix/core';
 
 export interface ShellInstallTarget {
   shell: SupportedShell;

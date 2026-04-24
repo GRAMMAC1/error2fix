@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { SupportedShell } from '../types.js';
+import type { SupportedShell } from '@error2fix/core';
 
 export function detectShell(explicitShell?: string): SupportedShell {
   const raw = explicitShell ?? process.env.SHELL ?? process.env.E2F_SHELL ?? '';
