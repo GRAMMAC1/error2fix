@@ -1,6 +1,6 @@
 {
   "name": "@error2fix/mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "MCP server for error2fix terminal failure diagnosis.",
   "bin": {
