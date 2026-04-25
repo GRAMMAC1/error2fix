@@ -14,13 +14,6 @@ export const mcpToolErrorSchema = z.object({
 
 export type McpToolError = z.infer<typeof mcpToolErrorSchema>;
 
-export const failureSourceSchema = z.enum(['stderr', 'stdout', 'combined']);
-
-export const lineRangeSchema = z.object({
-  start: z.number().int().nonnegative(),
-  end: z.number().int().nonnegative(),
-});
-
 export const commandContextSchema = z.object({
   raw: z.string(),
   cwd: z.string(),
@@ -50,7 +43,6 @@ export const diagnosisEvidenceSchema = z.object({
   excerpt: z.string(),
 });
 
-export type FailureSource = z.infer<typeof failureSourceSchema>;
 export type DiagnosisEvidence = z.infer<typeof diagnosisEvidenceSchema>;
 
 export const getLatestFailureBriefInputSchema = {
@@ -113,44 +105,40 @@ export type GetLatestFailureBriefResult = z.infer<
 >;
 
 export const queryFailureEvidenceInputSchema = {
-  sessionId: z.string().optional(),
-  signalIds: z.array(z.string()).optional(),
-  query: z
+  sessionId: z.string(),
+  focus: z
     .object({
-      text: z.string().optional(),
-      regex: z.string().optional(),
-      relatedFile: z.string().optional(),
-      keyword: z.string().optional(),
-      source: failureSourceSchema.optional(),
+      evidenceIds: z.array(z.string()).optional(),
+      files: z.array(z.string()).optional(),
+      keywords: z.array(z.string()).optional(),
     })
     .optional(),
-  contextLines: z.number().int().min(0).max(30).optional(),
-  maxSpans: z.number().int().min(1).max(10).optional(),
-  maxCharsPerSpan: z.number().int().min(1).max(8000).optional(),
+  maxSections: z.number().int().min(1).max(8).optional(),
+  maxCharsPerSection: z.number().int().min(1).max(4000).optional(),
 };
+
+export const evidenceSectionSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  reason: z.string(),
+  excerpt: z.string(),
+  relatedFiles: z.array(z.string()),
+  keywords: z.array(z.string()),
+});
 
 export const queryFailureEvidenceResultSchema = z.object({
   ok: z.boolean(),
   sessionId: z.string().optional(),
-  spans: z
-    .array(
-      z.object({
-        id: z.string(),
-        source: failureSourceSchema,
-        reason: z.string(),
-        confidence: z.number().min(0).max(1),
-        lineRange: lineRangeSchema,
-        excerpt: z.string(),
-        relatedSignalIds: z.array(z.string()),
-        relatedFiles: z.array(z.string()),
-        keywords: z.array(z.string()),
-      }),
-    )
+  evidence: z
+    .object({
+      summary: z.string(),
+      sections: z.array(evidenceSectionSchema),
+    })
     .optional(),
-  exhausted: z.boolean().optional(),
-  nextSuggestedQueries: z.array(z.string()).optional(),
   error: mcpToolErrorSchema.optional(),
 });
+
+export type EvidenceSection = z.infer<typeof evidenceSectionSchema>;
 
 export type QueryFailureEvidenceArgs = z.infer<
   z.ZodObject<typeof queryFailureEvidenceInputSchema>

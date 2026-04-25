@@ -1,9 +1,14 @@
-import type { CoreAnalysisInput, LatestRawCapture } from '@error2fix/core';
+import type {
+  CoreAnalysis,
+  CoreAnalysisInput,
+  LatestRawCapture,
+} from '@error2fix/core';
 
 export interface BriefSessionContext {
   sessionId: string;
   capture: LatestRawCapture;
   input: CoreAnalysisInput;
+  analysis: CoreAnalysis;
 }
 
 const briefSessions = new Map<string, BriefSessionContext>();
@@ -13,11 +18,13 @@ export function rememberBriefSession(
   sessionId: string,
   capture: LatestRawCapture,
   input: CoreAnalysisInput,
+  analysis: CoreAnalysis,
 ): void {
   briefSessions.set(sessionId, {
     sessionId,
     capture,
     input,
+    analysis,
   });
   latestBriefSessionId = sessionId;
 }
