@@ -11,6 +11,10 @@ import type {
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { z } from 'zod';
 import {
+  rememberBriefSession,
+  resolveBriefSession,
+} from '../store/brief-session-store.js';
+import {
   getLatestFailureBriefInputSchema,
   getLatestFailureBriefResultSchema,
   getRuntimeContextInputSchema,
@@ -26,10 +30,22 @@ import type {
   GetRuntimeContextResult,
   QueryFailureEvidenceArgs,
   QueryFailureEvidenceResult,
+  RuntimeContextSection,
 } from './tool-protocol.js';
 
 const DEFAULT_MAX_EVIDENCE = 3;
 const DEFAULT_MAX_SNIPPET_CHARS = 1200;
+const DEFAULT_RUNTIME_CONTEXT_SECTIONS: RuntimeContextSection[] = [
+  'command',
+  'os',
+  'shell',
+  'workspace',
+  'git',
+];
+const SAFE_ENV_KEY_PATTERN =
+  /^(CI|NODE_ENV|npm_config_(registry|user_agent)|HTTP_PROXY|HTTPS_PROXY|NO_PROXY)$/i;
+const SECRET_ENV_KEY_PATTERN =
+  /(token|secret|password|passwd|credential|cookie|key)$/i;
 
 const WORKFLOW_DESCRIPTION = [
   'Recommended workflow: call e2f_get_latest_failure_brief first.',
@@ -177,6 +193,64 @@ function buildSuggestedQueries(
   ]).slice(0, 5);
 }
 
+function shouldInclude(
+  requestedSections: Set<RuntimeContextSection>,
+  section: RuntimeContextSection,
+): boolean {
+  return requestedSections.has(section);
+}
+
+function isSafeEnvKey(key: string): boolean {
+  return SAFE_ENV_KEY_PATTERN.test(key) && !SECRET_ENV_KEY_PATTERN.test(key);
+}
+
+function buildSafeEnv(
+  env: Record<string, string> | undefined,
+  envKeys: string[] | undefined,
+): {
+  safeEnv?: Record<string, string>;
+  redactions?: Array<{
+    key: string;
+    reason: 'secret_like' | 'not_allowlisted' | 'too_large';
+  }>;
+} {
+  if (!env) {
+    return {};
+  }
+
+  const keys = envKeys ?? Object.keys(env).filter(isSafeEnvKey);
+  const safeEnv: Record<string, string> = {};
+  const redactions: Array<{
+    key: string;
+    reason: 'secret_like' | 'not_allowlisted' | 'too_large';
+  }> = [];
+
+  for (const key of keys) {
+    if (!(key in env)) {
+      continue;
+    }
+    if (SECRET_ENV_KEY_PATTERN.test(key)) {
+      redactions.push({ key, reason: 'secret_like' });
+      continue;
+    }
+    if (!isSafeEnvKey(key)) {
+      redactions.push({ key, reason: 'not_allowlisted' });
+      continue;
+    }
+    const value = env[key] ?? '';
+    if (value.length > 500) {
+      redactions.push({ key, reason: 'too_large' });
+      continue;
+    }
+    safeEnv[key] = value;
+  }
+
+  return {
+    safeEnv: Object.keys(safeEnv).length > 0 ? safeEnv : undefined,
+    redactions: redactions.length > 0 ? redactions : undefined,
+  };
+}
+
 export async function getLatestFailureBrief(
   args: GetLatestFailureBriefArgs,
 ): Promise<GetLatestFailureBriefResult> {
@@ -235,6 +309,10 @@ export async function getLatestFailureBrief(
         suggestedQueries: buildSuggestedQueries(analysis, input.signals),
       },
     };
+    const sessionId = resultWithoutTokenPolicy.sessionId;
+    if (sessionId) {
+      rememberBriefSession(sessionId, capture, input);
+    }
 
     return getLatestFailureBriefResultSchema.parse({
       ...resultWithoutTokenPolicy,
@@ -266,12 +344,65 @@ export async function queryFailureEvidence(
 }
 
 export async function getRuntimeContext(
-  _args: GetRuntimeContextArgs = {},
+  args: GetRuntimeContextArgs = {},
 ): Promise<GetRuntimeContextResult> {
-  return notImplementedResult(
-    getRuntimeContextResultSchema,
-    'e2f_get_runtime_context is defined but not implemented yet.',
+  const session = resolveBriefSession(args.sessionId);
+  if (!session) {
+    return getRuntimeContextResultSchema.parse({
+      ok: false,
+      error: {
+        code: 'NO_FAILURE_SESSION',
+        message:
+          'No brief session context is available. Call e2f_get_latest_failure_brief first, or pass a valid sessionId.',
+      },
+    });
+  }
+
+  const requestedSections = new Set(
+    args.include ?? DEFAULT_RUNTIME_CONTEXT_SECTIONS,
   );
+  const safeEnvResult = shouldInclude(requestedSections, 'safe_env')
+    ? buildSafeEnv(session.input.capture.host.env, args.envKeys)
+    : {};
+
+  return getRuntimeContextResultSchema.parse({
+    ok: true,
+    sessionId: session.sessionId,
+    contextSource: 'client_provided',
+    command: shouldInclude(requestedSections, 'command')
+      ? {
+          raw: session.capture.metadata.command,
+          cwd: session.capture.metadata.cwd,
+          shell: session.capture.metadata.shell,
+          exitCode: session.capture.metadata.exitCode,
+          source: 'client_provided',
+        }
+      : undefined,
+    os: shouldInclude(requestedSections, 'os')
+      ? {
+          ...session.input.capture.host.os,
+          source: 'client_provided',
+        }
+      : undefined,
+    shell: shouldInclude(requestedSections, 'shell')
+      ? session.capture.metadata.shell
+      : undefined,
+    workspace: shouldInclude(requestedSections, 'workspace')
+      ? {
+          cwd: session.input.workspace.cwd,
+          root: session.input.workspace.root,
+          detectedFiles: session.input.workspace.files,
+          source: 'client_provided',
+        }
+      : undefined,
+    git: shouldInclude(requestedSections, 'git')
+      ? {
+          branch: session.input.workspace.git?.branch,
+          source: 'client_provided',
+        }
+      : undefined,
+    ...safeEnvResult,
+  });
 }
 
 export function registerDiagnosisWorkflowTools(server: McpServer): void {

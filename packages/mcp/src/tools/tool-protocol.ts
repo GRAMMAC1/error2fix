@@ -26,12 +26,14 @@ export const commandContextSchema = z.object({
   cwd: z.string(),
   shell: z.string(),
   exitCode: z.number().int(),
+  source: z.literal('client_provided'),
 });
 
 export const osContextSchema = z.object({
   platform: z.string(),
   release: z.string().optional(),
   arch: z.string().optional(),
+  source: z.literal('client_provided').optional(),
 });
 
 export const runtimeContextEntrySchema = z.object({
@@ -40,6 +42,7 @@ export const runtimeContextEntrySchema = z.object({
   detectedFrom: z
     .enum(['path', 'package_json', 'lockfile', 'config', 'unknown'])
     .optional(),
+  source: z.literal('client_provided').optional(),
 });
 
 export const diagnosisEvidenceSchema = z.object({
@@ -157,6 +160,7 @@ export type QueryFailureEvidenceResult = z.infer<
 >;
 
 export const runtimeContextSectionSchema = z.enum([
+  'command',
   'os',
   'shell',
   'package_manager',
@@ -175,6 +179,7 @@ export const getRuntimeContextInputSchema = {
 export const getRuntimeContextResultSchema = z.object({
   ok: z.boolean(),
   sessionId: z.string().optional(),
+  contextSource: z.literal('client_provided').optional(),
   command: commandContextSchema.optional(),
   os: osContextSchema.optional(),
   shell: z.string().optional(),
@@ -191,11 +196,13 @@ export const getRuntimeContextResultSchema = z.object({
       cwd: z.string(),
       root: z.string().optional(),
       detectedFiles: z.array(z.string()),
+      source: z.literal('client_provided'),
     })
     .optional(),
   git: z
     .object({
       branch: z.string().nullable().optional(),
+      source: z.literal('client_provided'),
     })
     .optional(),
   safeEnv: z.record(z.string()).optional(),
