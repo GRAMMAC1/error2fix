@@ -35,7 +35,7 @@ const WORKFLOW_DESCRIPTION = [
   'Recommended workflow: call e2f_get_latest_failure_brief first.',
   'If next.canAnswerFromBrief is true, answer without requesting raw logs.',
   'If more evidence is needed, call e2f_query_failure_evidence with signal IDs or suggested queries from the brief.',
-  'Call e2f_get_runtime_context only when OS, shell, package manager, runtime versions, workspace, git, or safe environment details affect the fix.',
+  'Call e2f_get_runtime_context only when command, OS, shell, package manager, runtime versions, workspace, git, or safe environment details affect the fix.',
 ].join(' ');
 
 function notImplementedResult<T extends z.ZodTypeAny>(
@@ -210,7 +210,6 @@ export async function getLatestFailureBrief(
       1,
       4000,
     );
-    const includeEnv = args.includeEnv ?? 'summary';
     const [input, analysis] = await Promise.all([
       buildCoreAnalysisInput(capture),
       diagnoseCapture(capture),
@@ -222,18 +221,6 @@ export async function getLatestFailureBrief(
     > = {
       ok: true,
       sessionId: makeSessionId(capture),
-      capturedAt: capture.metadata.timestamp,
-      command: {
-        raw: capture.metadata.command,
-        cwd: capture.metadata.cwd,
-        shell: capture.metadata.shell,
-        exitCode: capture.metadata.exitCode,
-      },
-      environment: {
-        os: analysis.host.os,
-        safeEnv: includeEnv === 'safe' ? analysis.host.env : undefined,
-        envAvailableViaTool: true,
-      },
       brief: {
         summary: analysis.summary,
         confidence,
@@ -306,7 +293,7 @@ export function registerDiagnosisWorkflowTools(server: McpServer): void {
       description: [
         'Analyze raw terminal failure logs provided by the LLM client and return a compact, high-signal diagnosis brief. Always pass both logs.stdout and logs.stderr, using an empty string for streams with no output.',
         'Use this tool first before sending raw logs into model context.',
-        'It returns command facts, a safe environment summary, ranked error signals, likely root-cause hints, and guidance on whether enough information is available to answer directly.',
+        'It returns ranked error signals, likely root-cause hints, and guidance on whether enough information is available to answer directly.',
         'This tool is optimized to reduce token usage by accepting raw stdout/stderr as tool input and returning only compact structured evidence.',
         WORKFLOW_DESCRIPTION,
       ].join(' '),
@@ -361,7 +348,7 @@ export function registerDiagnosisWorkflowTools(server: McpServer): void {
       title: 'Get Runtime Context',
       description: [
         'Return safe runtime and workspace context for the latest captured failure.',
-        'Use this when diagnosis depends on OS, shell, package manager, runtime versions, workspace files, git state, or allowlisted environment variables.',
+        'Use this when diagnosis depends on command facts, OS, shell, package manager, runtime versions, workspace files, git state, or allowlisted environment variables.',
         'Sensitive environment variables are never returned.',
         WORKFLOW_DESCRIPTION,
       ].join(' '),

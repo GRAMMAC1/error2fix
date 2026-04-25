@@ -71,22 +71,11 @@ export const getLatestFailureBriefInputSchema = {
   }),
   maxSignals: z.number().int().min(1).max(10).optional(),
   maxSnippetChars: z.number().int().min(1).max(4000).optional(),
-  includeEnv: z.enum(['summary', 'safe', 'none']).optional(),
 };
 
 export const getLatestFailureBriefResultSchema = z.object({
   ok: z.boolean(),
   sessionId: z.string().optional(),
-  capturedAt: z.string().optional(),
-  command: commandContextSchema.optional(),
-  environment: z
-    .object({
-      os: osContextSchema,
-      runtimes: z.array(runtimeContextEntrySchema).optional(),
-      safeEnv: z.record(z.string()).optional(),
-      envAvailableViaTool: z.boolean(),
-    })
-    .optional(),
   brief: z
     .object({
       summary: z.string(),
@@ -191,6 +180,7 @@ export const getRuntimeContextInputSchema = {
 export const getRuntimeContextResultSchema = z.object({
   ok: z.boolean(),
   sessionId: z.string().optional(),
+  command: commandContextSchema.optional(),
   os: osContextSchema.optional(),
   shell: z.string().optional(),
   packageManager: z
