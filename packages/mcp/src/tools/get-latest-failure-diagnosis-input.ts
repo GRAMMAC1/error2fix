@@ -2,19 +2,11 @@ import { diagnoseCapture, loadLatestRawCapture } from '@error2fix/core';
 import type { CoreAnalysis } from '@error2fix/core';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { mcpToolErrorSchema } from './tool-protocol.js';
 
 export const getLatestFailureDiagnosisInputInputSchema = {};
 
-export const toolErrorSchema = z.object({
-  code: z.enum([
-    'NO_FAILURE_SESSION',
-    'INVALID_SESSION',
-    'CONTEXT_BUILD_FAILED',
-    'PROMPT_BUILD_FAILED',
-    'UNKNOWN_ERROR',
-  ]),
-  message: z.string(),
-});
+export const toolErrorSchema = mcpToolErrorSchema;
 
 export const getLatestFailureDiagnosisInputOutputSchema = {
   ok: z.boolean(),
@@ -91,7 +83,7 @@ export function registerGetLatestFailureDiagnosisInputTool(
     {
       title: 'Get Latest Failure Diagnosis Input',
       description:
-        'Return the latest captured terminal failure as aggregated CoreAnalysis output.',
+        'Legacy compatibility tool. Returns the aggregated CoreAnalysis for the latest captured failure. Prefer e2f_get_latest_failure_brief for token-efficient diagnosis workflows.',
       inputSchema: getLatestFailureDiagnosisInputInputSchema,
       outputSchema: getLatestFailureDiagnosisInputOutputSchema,
     },
