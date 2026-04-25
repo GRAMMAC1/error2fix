@@ -1,3 +1,13 @@
+import {
+  buildCoreAnalysisInput,
+  diagnoseCapture,
+  shortHash,
+} from '@error2fix/core';
+import type {
+  CoreAnalysis,
+  CoreErrorSignalSet,
+  LatestRawCapture,
+} from '@error2fix/core';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { z } from 'zod';
 import {
@@ -9,6 +19,7 @@ import {
   queryFailureEvidenceResultSchema,
 } from './tool-protocol.js';
 import type {
+  FailureSignal,
   GetLatestFailureBriefArgs,
   GetLatestFailureBriefResult,
   GetRuntimeContextArgs,
@@ -16,6 +27,9 @@ import type {
   QueryFailureEvidenceArgs,
   QueryFailureEvidenceResult,
 } from './tool-protocol.js';
+
+const DEFAULT_MAX_SIGNALS = 5;
+const DEFAULT_MAX_SNIPPET_CHARS = 1200;
 
 const WORKFLOW_DESCRIPTION = [
   'Recommended workflow: call e2f_get_latest_failure_brief first.',
@@ -47,13 +61,223 @@ function makeToolText(result: {
   return result.error?.message ?? 'Unknown error';
 }
 
-export async function getLatestFailureBrief(
-  _args: GetLatestFailureBriefArgs = {},
-): Promise<GetLatestFailureBriefResult> {
-  return notImplementedResult(
-    getLatestFailureBriefResultSchema,
-    'e2f_get_latest_failure_brief is defined but not implemented yet.',
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+function truncate(
+  text: string | undefined,
+  maxChars: number,
+): string | undefined {
+  if (!text) {
+    return undefined;
+  }
+  if (text.length <= maxChars) {
+    return text;
+  }
+  return `${text.slice(0, Math.max(0, maxChars - 3)).trimEnd()}...`;
+}
+
+function firstNonEmpty(values: Array<string | undefined>): string | undefined {
+  return values.find((value) => value !== undefined && value.trim().length > 0);
+}
+
+function unique(values: string[]): string[] {
+  return [...new Set(values.filter((value) => value.trim().length > 0))];
+}
+
+function makeSessionId(capture: LatestRawCapture): string {
+  return shortHash(
+    [
+      capture.metadata.timestamp,
+      capture.metadata.cwd,
+      capture.metadata.command,
+      String(capture.metadata.exitCode),
+      capture.stdout,
+      capture.stderr,
+    ].join('\n'),
   );
+}
+
+function buildCaptureFromArgs(
+  args: GetLatestFailureBriefArgs,
+): LatestRawCapture | undefined {
+  const stdout = args.logs.stdout;
+  const stderr = args.logs.stderr;
+
+  if (stdout.trim().length === 0 && stderr.trim().length === 0) {
+    return undefined;
+  }
+
+  return {
+    metadata: {
+      command: args.command?.raw ?? 'unknown command',
+      exitCode: args.command?.exitCode ?? 1,
+      cwd: args.command?.cwd ?? process.cwd(),
+      shell: args.command?.shell ?? 'unknown',
+      timestamp: args.command?.timestamp ?? Date.now().toString(),
+    },
+    stdout,
+    stderr,
+    stdoutLogFile: '',
+    stderrLogFile: '',
+  };
+}
+
+// TODO need smarter signal extraction and ranking to improve confidence inference and surface more focused evidence instead of generic keywords and stack lines
+function inferConfidence(
+  analysis: CoreAnalysis,
+  signals: CoreErrorSignalSet,
+): number {
+  const matchedSpecificPlugin = analysis.pluginResults.some(
+    (result) => result.matched && result.plugin !== 'builtin-generic',
+  );
+  if (matchedSpecificPlugin && analysis.keySnippet) {
+    return 0.9;
+  }
+  if (analysis.keySnippet && signals.relatedFiles.length > 0) {
+    return 0.8;
+  }
+  if (analysis.keySnippet || signals.keywords.length > 0) {
+    return 0.65;
+  }
+  return 0.45;
+}
+
+function buildFailureSignals(
+  analysis: CoreAnalysis,
+  coreSignals: CoreErrorSignalSet,
+  maxSignals: number,
+  maxSnippetChars: number,
+): FailureSignal[] {
+  const confidence = inferConfidence(analysis, coreSignals);
+  const candidates = unique([
+    analysis.keySnippet ?? '',
+    coreSignals.snippet ?? '',
+    ...coreSignals.stackLines,
+  ]);
+
+  return candidates.slice(0, maxSignals).map((candidate, index) => {
+    const excerpt = truncate(candidate, maxSnippetChars) ?? candidate;
+    return {
+      id: `signal-${index + 1}`,
+      confidence: Math.max(0.3, confidence - index * 0.08),
+      message:
+        firstNonEmpty([candidate.split(/\r?\n/)[0], analysis.summary]) ??
+        'Captured failure signal',
+      excerpt,
+      relatedFiles: analysis.relatedFiles,
+      keywords: coreSignals.keywords,
+    };
+  });
+}
+
+function estimateReturnedChars(
+  result: Omit<GetLatestFailureBriefResult, 'tokenPolicy'>,
+): number {
+  return JSON.stringify(result).length;
+}
+
+function buildSuggestedQueries(
+  analysis: CoreAnalysis,
+  signals: CoreErrorSignalSet,
+): string[] {
+  return unique([
+    ...signals.keywords.slice(0, 3),
+    ...analysis.relatedFiles.slice(0, 3),
+  ]).slice(0, 5);
+}
+
+export async function getLatestFailureBrief(
+  args: GetLatestFailureBriefArgs,
+): Promise<GetLatestFailureBriefResult> {
+  const capture = buildCaptureFromArgs(args);
+  if (!capture) {
+    return getLatestFailureBriefResultSchema.parse({
+      ok: false,
+      error: {
+        code: 'INVALID_SESSION',
+        message:
+          'No raw failure log was provided. Pass stdout and stderr strings in logs, using an empty string for streams with no output.',
+      },
+    });
+  }
+
+  try {
+    const maxSignals = clamp(args.maxSignals ?? DEFAULT_MAX_SIGNALS, 1, 10);
+    const maxSnippetChars = clamp(
+      args.maxSnippetChars ?? DEFAULT_MAX_SNIPPET_CHARS,
+      1,
+      4000,
+    );
+    const includeEnv = args.includeEnv ?? 'summary';
+    const [input, analysis] = await Promise.all([
+      buildCoreAnalysisInput(capture),
+      diagnoseCapture(capture),
+    ]);
+    const confidence = inferConfidence(analysis, input.signals);
+    const resultWithoutTokenPolicy: Omit<
+      GetLatestFailureBriefResult,
+      'tokenPolicy'
+    > = {
+      ok: true,
+      sessionId: makeSessionId(capture),
+      capturedAt: capture.metadata.timestamp,
+      command: {
+        raw: capture.metadata.command,
+        cwd: capture.metadata.cwd,
+        shell: capture.metadata.shell,
+        exitCode: capture.metadata.exitCode,
+      },
+      environment: {
+        os: analysis.host.os,
+        safeEnv: includeEnv === 'safe' ? analysis.host.env : undefined,
+        envAvailableViaTool: true,
+      },
+      brief: {
+        summary: analysis.summary,
+        confidence,
+        keySnippet: truncate(analysis.keySnippet, maxSnippetChars),
+        likelyCauses: analysis.likelyCauses,
+        suggestedFixes: analysis.nextSteps,
+        filesToInspect: analysis.relatedFiles,
+      },
+      signals: buildFailureSignals(
+        analysis,
+        input.signals,
+        maxSignals,
+        maxSnippetChars,
+      ),
+      next: {
+        canAnswerFromBrief: confidence >= 0.75,
+        recommendedTool:
+          confidence >= 0.75 ? undefined : 'e2f_query_failure_evidence',
+        reason:
+          confidence >= 0.75
+            ? 'The brief includes a high-confidence failure signal.'
+            : 'The brief is available, but more focused evidence may improve the fix.',
+        suggestedQueries: buildSuggestedQueries(analysis, input.signals),
+      },
+    };
+
+    return getLatestFailureBriefResultSchema.parse({
+      ...resultWithoutTokenPolicy,
+      tokenPolicy: {
+        rawLogsOmitted: true,
+        estimatedRawLogChars: capture.stdout.length + capture.stderr.length,
+        returnedChars: estimateReturnedChars(resultWithoutTokenPolicy),
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return getLatestFailureBriefResultSchema.parse({
+      ok: false,
+      error: {
+        code: 'UNKNOWN_ERROR',
+        message,
+      },
+    });
+  }
 }
 
 export async function queryFailureEvidence(
@@ -80,10 +304,10 @@ export function registerDiagnosisWorkflowTools(server: McpServer): void {
     {
       title: 'Get Latest Failure Brief',
       description: [
-        'Get the latest captured terminal failure as a compact, high-signal diagnosis brief.',
-        'Use this tool first before reading raw logs.',
+        'Analyze raw terminal failure logs provided by the LLM client and return a compact, high-signal diagnosis brief. Always pass both logs.stdout and logs.stderr, using an empty string for streams with no output.',
+        'Use this tool first before sending raw logs into model context.',
         'It returns command facts, a safe environment summary, ranked error signals, likely root-cause hints, and guidance on whether enough information is available to answer directly.',
-        'This tool is optimized to reduce token usage by omitting full stdout and stderr unless a follow-up evidence query is needed.',
+        'This tool is optimized to reduce token usage by accepting raw stdout/stderr as tool input and returning only compact structured evidence.',
         WORKFLOW_DESCRIPTION,
       ].join(' '),
       inputSchema: getLatestFailureBriefInputSchema,

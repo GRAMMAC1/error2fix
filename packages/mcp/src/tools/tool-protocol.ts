@@ -16,17 +16,6 @@ export type McpToolError = z.infer<typeof mcpToolErrorSchema>;
 
 export const failureSourceSchema = z.enum(['stderr', 'stdout', 'combined']);
 
-export const failureSignalKindSchema = z.enum([
-  'compiler_error',
-  'test_failure',
-  'runtime_exception',
-  'missing_dependency',
-  'permission',
-  'network',
-  'syntax',
-  'unknown',
-]);
-
 export const lineRangeSchema = z.object({
   start: z.number().int().nonnegative(),
   end: z.number().int().nonnegative(),
@@ -55,8 +44,6 @@ export const runtimeContextEntrySchema = z.object({
 
 export const failureSignalSchema = z.object({
   id: z.string(),
-  kind: failureSignalKindSchema,
-  source: failureSourceSchema,
   confidence: z.number().min(0).max(1),
   message: z.string(),
   excerpt: z.string(),
@@ -66,10 +53,22 @@ export const failureSignalSchema = z.object({
 });
 
 export type FailureSource = z.infer<typeof failureSourceSchema>;
-export type FailureSignalKind = z.infer<typeof failureSignalKindSchema>;
 export type FailureSignal = z.infer<typeof failureSignalSchema>;
 
 export const getLatestFailureBriefInputSchema = {
+  command: z
+    .object({
+      raw: z.string().optional(),
+      cwd: z.string().optional(),
+      shell: z.enum(['zsh', 'bash', 'fish', 'unknown']).optional(),
+      exitCode: z.number().int().optional(),
+      timestamp: z.string().optional(),
+    })
+    .optional(),
+  logs: z.object({
+    stdout: z.string(),
+    stderr: z.string(),
+  }),
   maxSignals: z.number().int().min(1).max(10).optional(),
   maxSnippetChars: z.number().int().min(1).max(4000).optional(),
   includeEnv: z.enum(['summary', 'safe', 'none']).optional(),
@@ -83,7 +82,6 @@ export const getLatestFailureBriefResultSchema = z.object({
   environment: z
     .object({
       os: osContextSchema,
-      packageManager: z.string().optional(),
       runtimes: z.array(runtimeContextEntrySchema).optional(),
       safeEnv: z.record(z.string()).optional(),
       envAvailableViaTool: z.boolean(),
@@ -92,7 +90,6 @@ export const getLatestFailureBriefResultSchema = z.object({
   brief: z
     .object({
       summary: z.string(),
-      failureKind: failureSignalKindSchema.optional(),
       confidence: z.number().min(0).max(1),
       keySnippet: z.string().optional(),
       likelyCauses: z.array(z.string()),

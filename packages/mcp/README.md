@@ -18,8 +18,9 @@ Running `e2f-mcp` starts the MCP server over stdio.
 
 ## What it does
 
-This server exposes diagnosis-oriented tools for AI clients. The second-phase
-tool protocol is designed around compact briefs first, focused evidence queries
+This server exposes diagnosis-oriented tools for AI clients. The client provides
+the raw failure logs it sees during the LLM workflow as `stdout` and `stderr`
+strings, and error2fix returns a compact brief first, focused evidence queries
 second, and runtime context only when it is useful.
 
 Current tools:
