@@ -42,18 +42,13 @@ export const runtimeContextEntrySchema = z.object({
     .optional(),
 });
 
-export const failureSignalSchema = z.object({
+export const diagnosisEvidenceSchema = z.object({
   id: z.string(),
-  confidence: z.number().min(0).max(1),
-  message: z.string(),
   excerpt: z.string(),
-  relatedFiles: z.array(z.string()),
-  keywords: z.array(z.string()),
-  lineRange: lineRangeSchema.optional(),
 });
 
 export type FailureSource = z.infer<typeof failureSourceSchema>;
-export type FailureSignal = z.infer<typeof failureSignalSchema>;
+export type DiagnosisEvidence = z.infer<typeof diagnosisEvidenceSchema>;
 
 export const getLatestFailureBriefInputSchema = {
   command: z
@@ -69,27 +64,27 @@ export const getLatestFailureBriefInputSchema = {
     stdout: z.string(),
     stderr: z.string(),
   }),
-  maxSignals: z.number().int().min(1).max(10).optional(),
+  maxEvidence: z.number().int().min(1).max(10).optional(),
   maxSnippetChars: z.number().int().min(1).max(4000).optional(),
 };
 
 export const getLatestFailureBriefResultSchema = z.object({
   ok: z.boolean(),
   sessionId: z.string().optional(),
-  brief: z
+  diagnosis: z
     .object({
       summary: z.string(),
       confidence: z.number().min(0).max(1),
-      keySnippet: z.string().optional(),
-      likelyCauses: z.array(z.string()),
-      suggestedFixes: z.array(z.string()),
-      filesToInspect: z.array(z.string()),
+      excerpt: z.string().optional(),
+      causes: z.array(z.string()),
+      files: z.array(z.string()),
+      keywords: z.array(z.string()),
+      evidence: z.array(diagnosisEvidenceSchema),
     })
     .optional(),
-  signals: z.array(failureSignalSchema).optional(),
   next: z
     .object({
-      canAnswerFromBrief: z.boolean(),
+      canAnswerFromDiagnosis: z.boolean(),
       recommendedTool: z
         .enum(['e2f_query_failure_evidence', 'e2f_get_runtime_context'])
         .optional(),

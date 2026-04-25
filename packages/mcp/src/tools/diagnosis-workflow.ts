@@ -19,7 +19,7 @@ import {
   queryFailureEvidenceResultSchema,
 } from './tool-protocol.js';
 import type {
-  FailureSignal,
+  DiagnosisEvidence,
   GetLatestFailureBriefArgs,
   GetLatestFailureBriefResult,
   GetRuntimeContextArgs,
@@ -28,13 +28,13 @@ import type {
   QueryFailureEvidenceResult,
 } from './tool-protocol.js';
 
-const DEFAULT_MAX_SIGNALS = 5;
+const DEFAULT_MAX_EVIDENCE = 3;
 const DEFAULT_MAX_SNIPPET_CHARS = 1200;
 
 const WORKFLOW_DESCRIPTION = [
   'Recommended workflow: call e2f_get_latest_failure_brief first.',
-  'If next.canAnswerFromBrief is true, answer without requesting raw logs.',
-  'If more evidence is needed, call e2f_query_failure_evidence with signal IDs or suggested queries from the brief.',
+  'If next.canAnswerFromDiagnosis is true, answer without requesting raw logs.',
+  'If more evidence is needed, call e2f_query_failure_evidence with evidence IDs or suggested queries from the diagnosis.',
   'Call e2f_get_runtime_context only when command, OS, shell, package manager, runtime versions, workspace, git, or safe environment details affect the fix.',
 ].join(' ');
 
@@ -76,10 +76,6 @@ function truncate(
     return text;
   }
   return `${text.slice(0, Math.max(0, maxChars - 3)).trimEnd()}...`;
-}
-
-function firstNonEmpty(values: Array<string | undefined>): string | undefined {
-  return values.find((value) => value !== undefined && value.trim().length > 0);
 }
 
 function unique(values: string[]): string[] {
@@ -144,30 +140,23 @@ function inferConfidence(
   return 0.45;
 }
 
-function buildFailureSignals(
+function buildDiagnosisEvidence(
   analysis: CoreAnalysis,
   coreSignals: CoreErrorSignalSet,
-  maxSignals: number,
+  maxEvidence: number,
   maxSnippetChars: number,
-): FailureSignal[] {
-  const confidence = inferConfidence(analysis, coreSignals);
+): DiagnosisEvidence[] {
   const candidates = unique([
     analysis.keySnippet ?? '',
     coreSignals.snippet ?? '',
     ...coreSignals.stackLines,
   ]);
 
-  return candidates.slice(0, maxSignals).map((candidate, index) => {
+  return candidates.slice(0, maxEvidence).map((candidate, index) => {
     const excerpt = truncate(candidate, maxSnippetChars) ?? candidate;
     return {
-      id: `signal-${index + 1}`,
-      confidence: Math.max(0.3, confidence - index * 0.08),
-      message:
-        firstNonEmpty([candidate.split(/\r?\n/)[0], analysis.summary]) ??
-        'Captured failure signal',
+      id: `evidence-${index + 1}`,
       excerpt,
-      relatedFiles: analysis.relatedFiles,
-      keywords: coreSignals.keywords,
     };
   });
 }
@@ -204,7 +193,7 @@ export async function getLatestFailureBrief(
   }
 
   try {
-    const maxSignals = clamp(args.maxSignals ?? DEFAULT_MAX_SIGNALS, 1, 10);
+    const maxEvidence = clamp(args.maxEvidence ?? DEFAULT_MAX_EVIDENCE, 1, 10);
     const maxSnippetChars = clamp(
       args.maxSnippetChars ?? DEFAULT_MAX_SNIPPET_CHARS,
       1,
@@ -221,28 +210,28 @@ export async function getLatestFailureBrief(
     > = {
       ok: true,
       sessionId: makeSessionId(capture),
-      brief: {
+      diagnosis: {
         summary: analysis.summary,
         confidence,
-        keySnippet: truncate(analysis.keySnippet, maxSnippetChars),
-        likelyCauses: analysis.likelyCauses,
-        suggestedFixes: analysis.nextSteps,
-        filesToInspect: analysis.relatedFiles,
+        excerpt: truncate(analysis.keySnippet, maxSnippetChars),
+        causes: analysis.likelyCauses.slice(0, 3),
+        files: analysis.relatedFiles.slice(0, 5),
+        keywords: input.signals.keywords.slice(0, 8),
+        evidence: buildDiagnosisEvidence(
+          analysis,
+          input.signals,
+          maxEvidence,
+          maxSnippetChars,
+        ),
       },
-      signals: buildFailureSignals(
-        analysis,
-        input.signals,
-        maxSignals,
-        maxSnippetChars,
-      ),
       next: {
-        canAnswerFromBrief: confidence >= 0.75,
+        canAnswerFromDiagnosis: confidence >= 0.75,
         recommendedTool:
           confidence >= 0.75 ? undefined : 'e2f_query_failure_evidence',
         reason:
           confidence >= 0.75
-            ? 'The brief includes a high-confidence failure signal.'
-            : 'The brief is available, but more focused evidence may improve the fix.',
+            ? 'The diagnosis includes a high-confidence failure signal.'
+            : 'The diagnosis is available, but more focused evidence may improve the fix.',
         suggestedQueries: buildSuggestedQueries(analysis, input.signals),
       },
     };
@@ -291,9 +280,9 @@ export function registerDiagnosisWorkflowTools(server: McpServer): void {
     {
       title: 'Get Latest Failure Brief',
       description: [
-        'Analyze raw terminal failure logs provided by the LLM client and return a compact, high-signal diagnosis brief. Always pass both logs.stdout and logs.stderr, using an empty string for streams with no output.',
+        'Analyze raw terminal failure logs provided by the LLM client and return a compact, high-signal diagnosis. Always pass both logs.stdout and logs.stderr, using an empty string for streams with no output.',
         'Use this tool first before sending raw logs into model context.',
-        'It returns ranked error signals, likely root-cause hints, and guidance on whether enough information is available to answer directly.',
+        'It returns a compact diagnosis, focused evidence excerpts, likely root-cause hints, and guidance on whether enough information is available to answer directly.',
         'This tool is optimized to reduce token usage by accepting raw stdout/stderr as tool input and returning only compact structured evidence.',
         WORKFLOW_DESCRIPTION,
       ].join(' '),
@@ -321,7 +310,7 @@ export function registerDiagnosisWorkflowTools(server: McpServer): void {
       description: [
         'Query focused evidence from the latest captured failure log.',
         'Use this only when e2f_get_latest_failure_brief is insufficient.',
-        'Prefer querying by signalIds returned by the brief.',
+        'Prefer querying by evidence IDs returned by the diagnosis.',
         'This tool returns small log spans around relevant matches instead of full raw logs.',
         WORKFLOW_DESCRIPTION,
       ].join(' '),
