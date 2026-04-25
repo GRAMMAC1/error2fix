@@ -18,11 +18,16 @@ Running `e2f-mcp` starts the MCP server over stdio.
 
 ## What it does
 
-This server reads the latest captured `error2fix` raw logs from `~/.e2f/logs/` and exposes diagnosis-oriented tools for AI clients.
+This server exposes diagnosis-oriented tools for AI clients. The client provides
+the raw failure logs it sees during the LLM workflow as `stdout` and `stderr`
+strings, and error2fix returns a compact brief first, focused evidence queries
+second, and runtime context only when it is useful.
 
-Current tool:
+Current tools:
 
-- `get_latest_failure_diagnosis_input`
+- `e2f_get_latest_failure_brief`
+- `e2f_query_failure_evidence`
+- `e2f_get_runtime_context`
 
 ## Typical setup
 
