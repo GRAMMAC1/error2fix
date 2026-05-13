@@ -2,7 +2,7 @@
   "name": "error2fix-workspace",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.6.2",
+  "packageManager": "pnpm@11.1.1",
   "description": "Post-failure terminal diagnosis for developers.",
   "scripts": {
     "build": "pnpm -r --filter \"./packages/*\" build",
@@ -29,8 +29,8 @@
     "pre-commit": "pnpm exec lint-staged"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.0",
     "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.31.0",
     "@types/node": "^24.0.0",
     "execa": "^9.6.0",
     "globals": "^16.4.0",
