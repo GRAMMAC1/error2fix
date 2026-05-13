@@ -19,7 +19,15 @@ import type {
   GetLatestFailureBriefArgs,
   GetLatestFailureBriefResult,
 } from './tool-protocol.js';
-import { clamp, truncate, unique } from './tool-utils.js';
+import {
+  clamp,
+  extractFocusedDiagnostic,
+  filterUsefulKeywords,
+  hasUsefulFailureSignal,
+  selectBestFailureExcerpt,
+  truncate,
+  unique,
+} from './tool-utils.js';
 
 function makeSessionId(capture: LatestRawCapture): string {
   return shortHash(
@@ -89,9 +97,26 @@ function buildDiagnosisEvidence(
     analysis.keySnippet ?? '',
     coreSignals.snippet ?? '',
     ...coreSignals.stackLines,
-  ]);
+  ])
+    .map(
+      (candidate) =>
+        extractFocusedDiagnostic(candidate, analysis.relatedFiles) ?? candidate,
+    )
+    .filter((candidate) =>
+      hasUsefulFailureSignal(
+        candidate,
+        analysis.relatedFiles,
+        coreSignals.keywords,
+      ),
+    );
+  const primaryExcerpt = selectBestFailureExcerpt(
+    candidates,
+    analysis.relatedFiles,
+    coreSignals.keywords,
+  );
+  const orderedCandidates = unique([primaryExcerpt ?? '', ...candidates]);
 
-  return candidates.slice(0, maxEvidence).map((candidate, index) => {
+  return orderedCandidates.slice(0, maxEvidence).map((candidate, index) => {
     const excerpt = truncate(candidate, maxSnippetChars) ?? candidate;
     return {
       id: `evidence-${index + 1}`,
@@ -111,7 +136,7 @@ function buildSuggestedQueries(
   signals: CoreErrorSignalSet,
 ): string[] {
   return unique([
-    ...signals.keywords.slice(0, 3),
+    ...filterUsefulKeywords(signals.keywords).slice(0, 3),
     ...analysis.relatedFiles.slice(0, 3),
   ]).slice(0, 5);
 }
@@ -143,6 +168,16 @@ export async function getLatestFailureBrief(
       diagnoseCapture(capture),
     ]);
     const confidence = inferConfidence(analysis, input.signals);
+    const evidence = buildDiagnosisEvidence(
+      analysis,
+      input.signals,
+      maxEvidence,
+      maxSnippetChars,
+    );
+    const usefulKeywords = filterUsefulKeywords(input.signals.keywords);
+    const noisyKeywords = input.signals.keywords.filter(
+      (keyword) => !usefulKeywords.includes(keyword),
+    );
     const resultWithoutTokenPolicy: Omit<
       GetLatestFailureBriefResult,
       'tokenPolicy'
@@ -152,16 +187,16 @@ export async function getLatestFailureBrief(
       diagnosis: {
         summary: analysis.summary,
         confidence,
-        excerpt: truncate(analysis.keySnippet, maxSnippetChars),
-        causes: analysis.likelyCauses.slice(0, 3),
+        excerpt: evidence[0]?.excerpt,
+        causes: analysis.likelyCauses
+          .filter(
+            (cause) =>
+              !noisyKeywords.some((keyword) => cause.includes(keyword)),
+          )
+          .slice(0, 3),
         files: analysis.relatedFiles.slice(0, 5),
-        keywords: input.signals.keywords.slice(0, 8),
-        evidence: buildDiagnosisEvidence(
-          analysis,
-          input.signals,
-          maxEvidence,
-          maxSnippetChars,
-        ),
+        keywords: usefulKeywords.slice(0, 8),
+        evidence,
       },
       next: {
         canAnswerFromDiagnosis: confidence >= 0.75,

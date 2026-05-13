@@ -16,17 +16,41 @@ import type {
   QueryFailureEvidenceArgs,
   QueryFailureEvidenceResult,
 } from './tool-protocol.js';
-import { clamp, truncate, unique } from './tool-utils.js';
+import {
+  clamp,
+  extractFocusedDiagnostic,
+  hasUsefulFailureSignal,
+  selectBestFailureExcerpt,
+  truncate,
+  unique,
+} from './tool-utils.js';
 
 function buildEvidenceSeeds(
   analysis: CoreAnalysis,
   coreSignals: CoreErrorSignalSet,
 ): string[] {
-  return unique([
+  const candidates = unique([
     analysis.keySnippet ?? '',
     coreSignals.snippet ?? '',
     ...coreSignals.stackLines,
-  ]);
+  ])
+    .map(
+      (candidate) =>
+        extractFocusedDiagnostic(candidate, analysis.relatedFiles) ?? candidate,
+    )
+    .filter((candidate) =>
+      hasUsefulFailureSignal(
+        candidate,
+        analysis.relatedFiles,
+        coreSignals.keywords,
+      ),
+    );
+  const primaryExcerpt = selectBestFailureExcerpt(
+    candidates,
+    analysis.relatedFiles,
+    coreSignals.keywords,
+  );
+  return unique([primaryExcerpt ?? '', ...candidates]);
 }
 
 function getEvidenceSeedById(
@@ -154,7 +178,7 @@ function buildEvidenceSections(
   const sections: EvidenceSection[] = [];
   const { analysis, input } = session;
 
-  const primaryExcerpt = analysis.keySnippet ?? input.signals.snippet;
+  const primaryExcerpt = buildEvidenceSeeds(analysis, input.signals)[0];
   if (primaryExcerpt) {
     sections.push(
       makeEvidenceSection(
