@@ -1,59 +1,11 @@
 # @error2fix/mcp
 
-`@error2fix/mcp` is a standalone Model Context Protocol server for `error2fix`.
+MCP server for agent-facing `error2fix` diagnosis workflows.
 
-Install it globally:
+This package exposes compact failure-analysis tools for IDEs and coding agents. The client provides the raw failed command output, and the server returns small, structured responses that are safer for an LLM token budget than full log replay.
 
-```bash
-npm install -g @error2fix/mcp
-```
+## Tools
 
-The package exposes a single executable:
-
-```bash
-e2f-mcp
-```
-
-Running `e2f-mcp` starts the MCP server over stdio.
-
-## What it does
-
-This server exposes diagnosis-oriented tools for AI clients. The client provides
-the raw failure logs it sees during the LLM workflow as `stdout` and `stderr`
-strings, and error2fix returns a compact brief first, focused evidence queries
-second, and runtime context only when it is useful.
-
-Current tools:
-
-- `e2f_get_latest_failure_brief`
-- `e2f_query_failure_evidence`
-- `e2f_get_runtime_context`
-
-## Typical setup
-
-1. Install and initialize the main CLI:
-
-```bash
-npm install -g error2fix
-e2f init
-```
-
-2. Install this MCP server:
-
-```bash
-npm install -g @error2fix/mcp
-```
-
-3. Configure your MCP client to launch:
-
-```bash
-e2f-mcp
-```
-
-## Development
-
-```bash
-pnpm install
-pnpm build
-pnpm --filter @error2fix/mcp start
-```
+- `e2f_get_latest_failure_brief`: compresses client-provided `stdout` and `stderr` into a diagnosis brief and creates a session.
+- `e2f_query_failure_evidence`: returns focused evidence windows from a cached session.
+- `e2f_get_runtime_context`: returns client-provided command and environment context from a cached session.

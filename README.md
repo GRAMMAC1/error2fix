@@ -1,127 +1,65 @@
 # error2fix
 
-`error2fix` helps you troubleshoot failed terminal commands without changing how you work.
+`error2fix` turns noisy terminal failures into compact, structured debugging context.
 
-You run your commands as usual. If something fails, just run `e2f` and get a clean diagnosis with the command, exit code, working directory, project context, and suggested next steps.
+The project has two complementary entry points:
 
-It also comes with a separate MCP server package, so AI tools can read the latest captured failure and help you debug it with the right context.
+- A post-failure CLI that records failed shell commands and summarizes the latest failure for humans.
+- An MCP server that lets coding agents request compressed failure context instead of reading full raw logs directly.
+
+The core product goal is to reduce the amount of irrelevant log text that a developer or LLM has to inspect before reaching the useful failure signal.
 
 ## Why it exists
 
-Most error helpers ask you to rerun your command through a wrapper.
+Terminal failures are usually noisy, repetitive, and hard to hand over to an AI assistant cleanly. Developers often have to copy a long log, explain what command ran, mention the working directory, and then ask the model to find the real signal.
 
-`error2fix` takes the opposite approach:
+`error2fix` keeps that workflow smaller:
 
-1. Install it once
-2. Run `e2f init` once
-3. Keep using your normal shell
-4. When a command fails, run `e2f`
+1. The CLI captures normal command failures after they happen.
+2. The diagnosis pipeline extracts the useful error signal from raw output.
+3. The MCP server gives agents compact failure context before they ask for more evidence.
 
-That means less copy-pasting, less “here’s what I ran” back-and-forth, and a much faster path from failure to fix.
+This is especially important for LLM workflows, where reading an entire raw log can waste tokens before the model reaches the actual error.
 
-## Install the CLI
+## CLI Installation
+
+Install the CLI package:
 
 ```bash
-npm install -g error2fix
+npm install -g @error2fix/cli
 ```
 
-Then initialize shell integration:
+Initialize shell integration once:
 
 ```bash
 e2f init
 ```
 
-To enable it right away in your current shell:
-
-```bash
-source ~/.zshrc
-```
-
-If you use another shell, source the matching config file or just open a new terminal window.
-
-## Basic usage
-
-Run something that fails:
-
-```bash
-pnpm build
-```
-
-Then ask `error2fix` for the latest failure:
+After that, keep using your terminal normally. When a command fails, run:
 
 ```bash
 e2f
 ```
 
-You can also call the command explicitly:
+The CLI stores local failure data under `~/.e2f`.
 
-```bash
-e2f fix
-```
+## MCP Installation
 
-## Commands
-
-### `e2f`
-
-Alias for `e2f fix`.
-
-### `e2f fix`
-
-Show a diagnosis for the latest captured failure.
-
-### `e2f init`
-
-Install shell hooks so failed commands are recorded automatically.
-
-### `e2f clear`
-
-Remove the shell hooks and clear local `~/.e2f` data.
-
-## CLI options
-
-```bash
-e2f --json
-e2f --no-color
-e2f --debug
-```
-
-## Install the MCP server
-
-The MCP server is published as a separate package:
+Install the MCP server package:
 
 ```bash
 npm install -g @error2fix/mcp
 ```
 
-This gives you a standalone executable:
+The package exposes:
 
 ```bash
 e2f-mcp
 ```
 
-Running `e2f-mcp` starts the MCP server over stdio.
+Configure your MCP client to start `e2f-mcp` as a stdio server.
 
-## How the MCP server fits in
-
-The CLI captures failures locally under `~/.e2f`.
-
-The MCP server lets AI tools read that latest failure and use it as structured debugging context.
-
-So the flow looks like this:
-
-1. You install `error2fix`
-2. You run `e2f init`
-3. A terminal command fails
-4. Your AI tool calls the `error2fix` MCP server
-5. The model gets the latest failure context and helps you debug it
-
-## Register the MCP server in VS Code
-
-VS Code supports local stdio MCP servers through `mcp.json`. See the official docs here:
-
-- [Use MCP servers in VS Code](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
-
-Create `.vscode/mcp.json` in your workspace:
+VS Code style configuration:
 
 ```json
 {
@@ -134,55 +72,45 @@ Create `.vscode/mcp.json` in your workspace:
 }
 ```
 
-Once that’s in place, your AI features in VS Code can discover and call the `error2fix` MCP tools.
+Cursor, Claude Desktop, Cline, and other `mcpServers`-style clients usually use:
 
-## Register the MCP server in Codex
-
-Codex can register local stdio MCP servers directly from the command line.
-
-Add the server:
-
-```bash
-codex mcp add error2fix -- e2f-mcp
+```json
+{
+  "mcpServers": {
+    "error2fix": {
+      "command": "e2f-mcp"
+    }
+  }
+}
 ```
 
-Check that it’s registered:
+## Product Direction
 
-```bash
-codex mcp list
-```
+`error2fix` is built around a post-failure workflow. Users should not have to wrap every command with a special runner. A normal command fails, then `error2fix` helps inspect what happened.
 
-After that, Codex can call the `error2fix` MCP tools when you ask it to inspect the latest terminal failure.
+For agent workflows, the goal is stricter: the model should not need to ingest an entire terminal log before it can reason about the failure. The MCP server is designed to expose a small loop:
 
-## A typical MCP workflow
+1. Return the most valuable compressed failure brief.
+2. Cache the failure as a session.
+3. Let the agent query focused evidence only when the brief is not enough.
+4. Return client-provided runtime context on demand.
 
-Install both packages:
+This keeps raw logs outside the model context as much as the host client allows.
 
-```bash
-npm install -g error2fix @error2fix/mcp
-e2f init
-```
+## MCP Workflow
 
-Run a command that fails:
+The MCP server currently exposes:
 
-```bash
-pnpm build
-```
+- `e2f_get_latest_failure_brief`: accepts `stdout`, `stderr`, and optional command metadata, then returns the compact diagnosis, evidence IDs, token policy metadata, and a `sessionId`.
+- `e2f_query_failure_evidence`: expands specific evidence from the cached session without returning the raw log.
+- `e2f_get_runtime_context`: returns client-provided command, workspace, shell, OS, git, or safe environment context from the cached session.
 
-Then, inside your AI tool, ask something like:
+The intended agent flow is:
 
 ```text
-Help me diagnose the latest failed terminal command.
+failed command output
+  -> e2f_get_latest_failure_brief
+  -> answer if sufficient
+  -> e2f_query_failure_evidence only if more detail is needed
+  -> e2f_get_runtime_context only if environment context matters
 ```
-
-The model can use the MCP server to retrieve the latest failure context instead of making you paste everything by hand.
-
-## Local data
-
-`error2fix` stores local data under:
-
-```text
-~/.e2f/
-```
-
-This includes captured failure sessions and lightweight cache files used by the CLI.
