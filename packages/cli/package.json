@@ -3,6 +3,11 @@
   "version": "0.3.0",
   "description": "Post-failure terminal diagnosis assistant for developers.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GRAMMAC1/error2fix.git",
+    "directory": "packages/cli"
+  },
   "bin": {
     "e2f": "./dist/cli.js"
   },
