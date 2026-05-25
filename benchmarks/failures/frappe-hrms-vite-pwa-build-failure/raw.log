@@ -1,0 +1,92 @@
+# Frappe HRMS Vite PWA build failure
+Source: https://github.com/frappe/hrms/issues/2435
+Repository API: https://api.github.com/repos/frappe/hrms/issues/2435
+
+x Build failed in 4.35s
+error during build:
+[vite-plugin-pwa:build] src/socket.js (2:9): "socketio_port" is not exported by "../../../sites/common_site_config.json", imported by "src/socket.js". (Note that you need @rollup/plugin-json to import JSON files)
+file: /home/frappe/frappe-bench/apps/hrms/frontend/src/socket.js:2:9
+
+1: import { io } from "socket.io-client"
+2: import { socketio_port } from "../../../../sites/common_site_config.json"
+            ^
+3: 
+4: import { getCachedListResource } from "frappe-ui/src/resources/listResource"
+
+    at getRollupError (file:///home/frappe/frappe-bench/apps/hrms/node_modules/vite/node_modules/rollup/dist/es/shared/parseAst.js:392:41)
+    at error (file:///home/frappe/frappe-bench/apps/hrms/node_modules/vite/node_modules/rollup/dist/es/shared/parseAst.js:388:42)
+    at Module.error (file:///home/frappe/frappe-bench/apps/hrms/node_modules/vite/node_modules/rollup/dist/es/shared/node-entry.js:13967:16)
+    at Module.traceVariable (file:///home/frappe/frappe-bench/apps/hrms/node_modules/vite/node_modules/rollup/dist/es/shared/node-entry.js:14414:29)
+    at ModuleScope.findVariable (file:///home/frappe/frappe-bench/apps/hrms/node_modules/vite/node_modules/rollup/dist/es/shared/node-entry.js:12121:39)
+    at FunctionScope.findVariable (file:///home/frappe/frappe-bench/apps/hrms/node_modules/vite/node_modules/rollup/dist/es/shared/node-entry.js:7467:38)
+    at FunctionBodyScope.findVariable (file:///home/frappe/frappe-bench/apps/hrms/node_modules/vite/node_modules/rollup/dist/es/shared/node-entry.js:7467:38)
+    at Identifier.bind (file:///home/frappe/frappe-bench/apps/hrms/node_modules/vite/node_modules/rollup/dist/es/shared/node-entry.js:6941:40)
+    at TemplateLiteral.bind (file:///home/frappe/frappe-bench/apps/hrms/node_modules/vite/node_modules/rollup/dist/es/shared/node-entry.js:4804:28)
+    at ConditionalExpression.bind (file:///home/frappe/frappe-bench/apps/hrms/node_modules/vite/node_modules/rollup/dist/es/shared/node-entry.js:4808:23)
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+Error: Command failed: yarn build
+    at checkExecSyncError (node:child_process:890:11)
+    at execSync (node:child_process:962:15)
+    at run_build_command_for_apps (/home/frappe/frappe-bench/apps/frappe/esbuild/esbuild.js:530:3)
+    at execute (/home/frappe/frappe-bench/apps/frappe/esbuild/esbuild.js:137:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  status: 1,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 198,
+  stdout: null,
+  stderr: null
+}
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+:: Command 'yarn run production --apps hrms --run-build-command' returned non-zero exit status 1. ::
+
+Context:
+ File '/home/frappe/frappe-bench/apps/frappe/frappe/commands/__init__.py', line 97
+
+  92:   )
+  93: 
+  94:   return_ = proc.wait()
+  95: 
+  96:   if return_ and raise_err:
+  97>           raise subprocess.CalledProcessError(return_, command)
+  98: 
+  99:   return return_
+ 100: 
+ 101: 
+ 102: def call_command(cmd, context):
+
+Do you want to see the full traceback? [y/N]: 
+ERROR: bench build --app hrms
+subprocess.CalledProcessError: Command 'bench build --app hrms' returned non-zero exit status 1.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/bin/bench", line 8, in <module>
+    sys.exit(cli())
+             ^^^^^
+  File "/usr/local/lib/python3.11/site-packages/bench/cli.py", line 132, in cli
+    bench_command()
+  File "/usr/local/lib/python3.11/site-packages/bench/commands/make.py", line 181, in get_app
+    get_app(
+  File "/usr/local/lib/python3.11/site-packages/bench/app.py", line 777, in get_app
+    app.install(verbose=verbose, skip_assets=skip_assets, restart_bench=restart_bench)
+  File "/usr/local/lib/python3.11/site-packages/bench/utils/render.py", line 126, in wrapper_fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/bench/app.py", line 254, in install
+    install_app(
+  File "/usr/local/lib/python3.11/site-packages/bench/app.py", line 925, in install_app
+    build_assets(bench_path=bench_path, app=app, using_cached=using_cached)
+  File "/usr/local/lib/python3.11/site-packages/bench/utils/bench.py", line 380, in build_assets
+    exec_cmd(command, cwd=bench_path, env=env)
+  File "/usr/local/lib/python3.11/site-packages/bench/utils/__init__.py", line 178, in exec_cmd
+    raise CommandFailedError(cmd) from subprocess.CalledProcessError(return_code, cmd)
+bench.exceptions.CommandFailedError: bench build --app hrms

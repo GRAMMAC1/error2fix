@@ -1,0 +1,195 @@
+# TanStack Vite devtools production build failure
+Source: https://github.com/TanStack/devtools/issues/444
+Repository API: https://api.github.com/repos/TanStack/devtools/issues/444
+
+[@tanstack/devtools-vite] Removed devtools code from: /src/lib/devtools/devtools.provider.tsx
+✗ Build failed in 708ms
+error during build:
+Build failed with 1 error:
+[builtin:vite-transform] Empty parenthesized expression
+   ╭─[ src/lib/devtools/devtools.provider.tsx:3:10 ]
+   │
+ 3 │ ╭─▶   return (
+ 4 │ ├─▶       );
+   │ │
+   │ ╰──────────────
+───╯
+
+--- log block ---
+
+react
+
+### Describe the bug and the steps to reproduce it
+
+## Bug Report
+
+### Describe the bug
+
+After upgrading `@tanstack/devtools-vite` from `0.6.0` to `0.7.0`, the production build fails. The plugin successfully detects and removes devtools code, but the transform leaves behind `return ();` — an empty parenthesized expression — which is a syntax error that rolldown rejects.
+
+### Steps to Reproduce
+
+1. Upgrade `@tanstack/devtools-vite` from `0.6.0` → `0.7.0`
+2. Have a component where the **entire return value** is devtools content:
+
+```tsx
+// src/lib/devtools/devtools.provider.tsx
+import { TanStackDevtools } from "@tanstack/react-devtools";
+import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
+
+export function DevtoolsProvider() {
+  return (
+      <TanStackDevtools
+        plugins={[
+          {
+            name: "TanStack Query",
+            render: <ReactQueryDevtoolsPanel />,
+          },
+          {
+            name: "TanStack Form",
+            render: <FormDevtoolsPanel />,
+          },
+
+--- log block ---
+
+## Bug Report
+
+### Describe the bug
+
+After upgrading `@tanstack/devtools-vite` from `0.6.0` to `0.7.0`, the production build fails. The plugin successfully detects and removes devtools code, but the transform leaves behind `return ();` — an empty parenthesized expression — which is a syntax error that rolldown rejects.
+
+### Steps to Reproduce
+
+1. Upgrade `@tanstack/devtools-vite` from `0.6.0` → `0.7.0`
+2. Have a component where the **entire return value** is devtools content:
+
+```tsx
+// src/lib/devtools/devtools.provider.tsx
+import { TanStackDevtools } from "@tanstack/react-devtools";
+import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
+
+export function DevtoolsProvider() {
+  return (
+      <TanStackDevtools
+        plugins={[
+          {
+            name: "TanStack Query",
+            render: <ReactQueryDevtoolsPanel />,
+          },
+          {
+            name: "TanStack Form",
+            render: <FormDevtoolsPanel />,
+          },
+        ]}
+      />
+  );
+}
+
+--- log block ---
+
+render: <FormDevtoolsPanel />,
+          },
+        ]}
+      />
+  );
+}
+```
+
+3. Run `vite build`
+
+### Expected Behavior
+
+Build succeeds. When the entire return expression is stripped, the transform should produce valid syntax — e.g. `return null;`.
+
+### Actual Behavior
+
+The plugin removes the JSX but leaves the `return (` and `);` tokens intact, producing:
+
+```tsx
+export function DevtoolsProvider() {
+  return (
+      );   // ← invalid empty parenthesized expression
+}
+```
+
+Which causes the build to fail:
+
+```
+[@tanstack/devtools-vite] Removed devtools code from: /src/lib/devtools/devtools.provider.tsx
+✗ Build failed in 708ms
+error during build:
+Build failed with 1 error:
+[builtin:vite-transform] Empty parenthesized expression
+
+--- log block ---
+
+return (
+      );   // ← invalid empty parenthesized expression
+}
+```
+
+Which causes the build to fail:
+
+```
+[@tanstack/devtools-vite] Removed devtools code from: /src/lib/devtools/devtools.provider.tsx
+✗ Build failed in 708ms
+error during build:
+Build failed with 1 error:
+[builtin:vite-transform] Empty parenthesized expression
+   ╭─[ src/lib/devtools/devtools.provider.tsx:3:10 ]
+   │
+ 3 │ ╭─▶   return (
+ 4 │ ├─▶       );
+   │ │
+   │ ╰──────────────
+───╯
+```
+
+### Environment
+
+| | Version |
+|---|---|
+| `@tanstack/devtools-vite` | `0.7.0` (regression from `0.6.0`) |
+| `vite` | `8.0.13` |
+| OS | Windows |
+
+### Workaround
+
+Pin back to `@tanstack/devtools-vite@0.6.0`, or wrap the return in a fragment so stripping the devtools node still leaves valid syntax:
+
+--- log block ---
+
+);   // ← invalid empty parenthesized expression
+}
+```
+
+Which causes the build to fail:
+
+```
+[@tanstack/devtools-vite] Removed devtools code from: /src/lib/devtools/devtools.provider.tsx
+✗ Build failed in 708ms
+error during build:
+Build failed with 1 error:
+[builtin:vite-transform] Empty parenthesized expression
+   ╭─[ src/lib/devtools/devtools.provider.tsx:3:10 ]
+   │
+ 3 │ ╭─▶   return (
+ 4 │ ├─▶       );
+   │ │
+   │ ╰──────────────
+───╯
+```
+
+### Environment
+
+| | Version |
+|---|---|
+| `@tanstack/devtools-vite` | `0.7.0` (regression from `0.6.0`) |
+| `vite` | `8.0.13` |
+| OS | Windows |
+
+### Workaround
+
+Pin back to `@tanstack/devtools-vite@0.6.0`, or wrap the return in a fragment so stripping the devtools node still leaves valid syntax:

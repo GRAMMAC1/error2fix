@@ -14,6 +14,7 @@
     "format": "biome format --write .",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
+    "benchmark:mcp": "tsx scripts/benchmark-mcp.ts",
     "mcp:dev": "pnpm --filter @error2fix/mcp dev",
     "mcp:start": "pnpm --filter @error2fix/mcp start",
     "prepare": "simple-git-hooks",

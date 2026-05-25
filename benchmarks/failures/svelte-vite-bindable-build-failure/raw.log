@@ -1,0 +1,19 @@
+# Svelte Vite bindable build failure
+Source: https://github.com/friendofsvelte/tipex/issues/45
+Repository API: https://api.github.com/repos/friendofsvelte/tipex/issues/45
+
+error during build:
+[vite-plugin-svelte:compile] [plugin vite-plugin-svelte:compile] node_modules/@friendofsvelte/tipex/dist/tipex/Tipex.svelte (22:34): node_modules/@friendofsvelte/tipex/dist/tipex/Tipex.svelte:22:34 `$bindable()` can only be used inside a `$props()` declaration
+https://svelte.dev/e/bindable_invalid_location
+file: node_modules/@friendofsvelte/tipex/dist/tipex/Tipex.svelte:22:34
+
+--- log block ---
+
+I just tried adding Tipex to a project that uses Svelte 5.55.5. The `npm run build` command fails with this:
+
+```
+error during build:
+[vite-plugin-svelte:compile] [plugin vite-plugin-svelte:compile] node_modules/@friendofsvelte/tipex/dist/tipex/Tipex.svelte (22:34): node_modules/@friendofsvelte/tipex/dist/tipex/Tipex.svelte:22:34 `$bindable()` can only be used inside a `$props()` declaration
+https://svelte.dev/e/bindable_invalid_location
+file: node_modules/@friendofsvelte/tipex/dist/tipex/Tipex.svelte:22:34
+```

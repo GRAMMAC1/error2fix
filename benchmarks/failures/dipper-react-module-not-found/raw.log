@@ -1,0 +1,65 @@
+# Dipper React module not found failure
+Source: https://github.com/sammlapp/dipper/issues/4
+Repository API: https://api.github.com/repos/sammlapp/dipper/issues/4
+
+[3/3] Building React app for server mode...
+  Building with REACT_APP_MODE=server...
+
+> dipper@0.0.13 build
+> react-scripts build
+
+Creating an optimized production build...
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Failed to compile.
+
+Module not found: Error: Can't resolve '@fontsource/outfit/index.css' in '/media/auk/projects/lfh/DIPPER/dipper/frontend/src'
+
+--- log block ---
+
+I get the following error after running:
+`sudo ./scripts/install-server.sh`
+
+```
+[3/3] Building React app for server mode...
+  Building with REACT_APP_MODE=server...
+
+> dipper@0.0.13 build
+> react-scripts build
+
+Creating an optimized production build...
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Failed to compile.
+
+Module not found: Error: Can't resolve '@fontsource/outfit/index.css' in '/media/auk/projects/lfh/DIPPER/dipper/frontend/src'
+```
+
+--- log block ---
+
+> dipper@0.0.13 build
+> react-scripts build
+
+Creating an optimized production build...
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Failed to compile.
+
+Module not found: Error: Can't resolve '@fontsource/outfit/index.css' in '/media/auk/projects/lfh/DIPPER/dipper/frontend/src'
+```
+
+--- log block ---
+
+> react-scripts build
+
+Creating an optimized production build...
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Failed to compile.
+
+Module not found: Error: Can't resolve '@fontsource/outfit/index.css' in '/media/auk/projects/lfh/DIPPER/dipper/frontend/src'
+```
