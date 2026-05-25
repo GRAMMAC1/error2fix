@@ -114,3 +114,29 @@ failed command output
   -> e2f_query_failure_evidence only if more detail is needed
   -> e2f_get_runtime_context only if environment context matters
 ```
+
+## Benchmark
+
+The repository includes an early MCP benchmark dataset under `benchmarks/failures`.
+Each case stores the original downloaded failure log as `raw.log`, so anyone can
+rerun the same compression workflow locally.
+
+Current frontend benchmark snapshot:
+
+- Cases: 7
+- Average reduction: 48.9%
+- Average total MCP ratio: 51.1%
+- Tool calls: 1 per case in the current run
+- Report: `benchmarks/reports/report.md`
+
+This dataset is intentionally small and currently includes several short logs.
+Short-log cases expose response-shape overhead: for example,
+`svelte-vite-bindable-build-failure` currently has negative compression because
+the structured MCP brief is larger than the original raw log. This is tracked as
+an optimization target rather than a success metric.
+
+Run the benchmark with:
+
+```bash
+pnpm benchmark:mcp
+```
