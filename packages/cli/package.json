@@ -16,8 +16,8 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "node --import tsx src/cli.ts",
+    "build": "rslib",
+    "dev": "rslib --watch",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "keywords": ["cli", "developer-tools", "errors", "diagnostics", "typescript"],

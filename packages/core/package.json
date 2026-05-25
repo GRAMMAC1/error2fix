@@ -12,7 +12,7 @@
     }
   },
   "scripts": {
-    "build": "tsup",
+    "build": "rslib",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

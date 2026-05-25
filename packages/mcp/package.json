@@ -24,8 +24,8 @@
     }
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "node --import tsx src/server.ts",
+    "build": "rslib",
+    "dev": "rslib --watch",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
