@@ -1,0 +1,209 @@
+# satellite.js Vite build failure
+Source: https://github.com/shashwatak/satellite-js/issues/165
+Repository API: https://api.github.com/repos/shashwatak/satellite-js/issues/165
+
+> vite-project@0.0.0 build
+   > tsc && vite build
+
+   vite v8.0.10 building client environment for production...
+   [plugin rolldown:vite-resolve] Module "node:module" has been externalized for browser compatibility, imported by "/data/vite-project/node_modules/satellite.js/wasm-build/base-release/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+   ✓ 52 modules transformed.
+   ✗ Build failed in 85ms
+   error during build:
+   Build failed with 1 error:
+
+   [plugin vite:worker-import-meta-url] /data/vite-project/node_modules/satellite.js/wasm-build/pthreads-release/index.js
+   Error: Build failed with 1 error:
+
+   [UNSUPPORTED_FEATURE] Error: Top-level await is currently not supported with the 'iife' output format
+          ╭─[ node_modules/satellite.js/wasm-build/pthreads-release/index.js:10430:208 ]
+          │
+    10430 │ ;return moduleRtn}export default Module;var isPthread=globalThis.self?.name?.startsWith("em-pthread");var isNode=globalThis.process?.versions?.node&&globalThis.process?.type!="renderer";if(isNode)isPthread=(await import("node:worker_threads")).workerData==="em-pthread";isPthread&&Module();
+          │                                                                                                                                                                                                                ─────────────────┬─────────────────
+          │                                                                                                                                                                                                                                 ╰───────────────────
+   ───────╯
+       at aggregateBindingErrorsIntoJsError (file:///data/vite-project/node_modules/rolldown/dist/shared/error-DL-e8-oE.mjs:48:18)
+       at unwrapBindingResult (file:///data/vite-project/node_modules/rolldown/dist/shared/error-DL-e8-oE.mjs:18:128)
+       at #build (file:///data/vite-project/node_modules/rolldown/dist/shared/rolldown-build-DSxL8qiP.mjs:3317:34)
+       at async bundleWorkerEntry (file:///data/vite-project/node_modules/vite/dist/node/chunks/node.js:27188:12)
+       at async workerFileToUrl (file:///data/vite-project/node_modules/vite/dist/node/chunks/node.js:27222:17)
+       at async TransformPluginContextImpl.handler (file:///data/vite-project/node_modules/vite/dist/node/chunks/node.js:28135:23)
+       at async plugin (file:///data/vite-project/node_modules/rolldown/dist/shared/bindingify-input-options-DbbBhzky.mjs:1172:16)
+       at async plugin.<computed> (file:///data/vite-project/node_modules/rolldown/dist/shared/bindingify-input-options-DbbBhzky.mjs:1612:12)
+       at aggregateBindingErrorsIntoJsError (file:///data/vite-project/node_modules/rolldown/dist/shared/error-DL-e8-oE.mjs:48:18)
+       at unwrapBindingResult (file:///data/vite-project/node_modules/rolldown/dist/shared/error-DL-e8-oE.mjs:18:128)
+       at #build (file:///data/vite-project/node_modules/rolldown/dist/shared/rolldown-build-DSxL8qiP.mjs:3317:34)
+       at async buildEnvironment (file:///data/vite-project/node_modules/vite/dist/node/chunks/node.js:33018:64)
+       at async Object.build (file:///data/vite-project/node_modules/vite/dist/node/chunks/node.js:33440:19)
+       at async Object.buildApp (file:///data/vite-project/node_modules/vite/dist/node/chunks/node.js:33437:153)
+       at async CAC.<anonymous> (file:///data/vite-project/node_modules/vite/dist/node/cli.js:778:3) {
+     errors: [Getter/Setter]
+   }
+
+--- log block ---
+
+Upgrading to satellite.js 7.0 causes build errors when building with current Vite version even using its default configs.
+
+## Reproducing
+
+1. Run `npm create vite@latest`
+   - Choose any of the framework settings e.g. Vanilla, choose TypeScript
+2. Run `npm i satellite.js`
+3. Edit `src/main.ts` to add:
+   ```ts
+   import { twoline2satrec, propagate } from "satellite.js";
+   const satrec = twoline2satrec("", "");
+   const p = propagate(satrec, new Date());
+   console.log(p);
+   ```
+4. Run `npm run build`
+5. Get following build errors:
+
+   ```
+   > vite-project@0.0.0 build
+   > tsc && vite build
+
+   vite v8.0.10 building client environment for production...
+   [plugin rolldown:vite-resolve] Module "node:module" has been externalized for browser compatibility, imported by "/data/vite-project/node_modules/satellite.js/wasm-build/base-release/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+   ✓ 52 modules transformed.
+   ✗ Build failed in 85ms
+
+--- log block ---
+
+Upgrading to satellite.js 7.0 causes build errors when building with current Vite version even using its default configs.
+
+## Reproducing
+
+1. Run `npm create vite@latest`
+   - Choose any of the framework settings e.g. Vanilla, choose TypeScript
+2. Run `npm i satellite.js`
+3. Edit `src/main.ts` to add:
+   ```ts
+   import { twoline2satrec, propagate } from "satellite.js";
+   const satrec = twoline2satrec("", "");
+   const p = propagate(satrec, new Date());
+   console.log(p);
+   ```
+4. Run `npm run build`
+5. Get following build errors:
+
+   ```
+   > vite-project@0.0.0 build
+   > tsc && vite build
+
+   vite v8.0.10 building client environment for production...
+   [plugin rolldown:vite-resolve] Module "node:module" has been externalized for browser compatibility, imported by "/data/vite-project/node_modules/satellite.js/wasm-build/base-release/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+   ✓ 52 modules transformed.
+   ✗ Build failed in 85ms
+   error during build:
+   Build failed with 1 error:
+
+   [plugin vite:worker-import-meta-url] /data/vite-project/node_modules/satellite.js/wasm-build/pthreads-release/index.js
+
+--- log block ---
+
+3. Edit `src/main.ts` to add:
+   ```ts
+   import { twoline2satrec, propagate } from "satellite.js";
+   const satrec = twoline2satrec("", "");
+   const p = propagate(satrec, new Date());
+   console.log(p);
+   ```
+4. Run `npm run build`
+5. Get following build errors:
+
+   ```
+   > vite-project@0.0.0 build
+   > tsc && vite build
+
+   vite v8.0.10 building client environment for production...
+   [plugin rolldown:vite-resolve] Module "node:module" has been externalized for browser compatibility, imported by "/data/vite-project/node_modules/satellite.js/wasm-build/base-release/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+   ✓ 52 modules transformed.
+   ✗ Build failed in 85ms
+   error during build:
+   Build failed with 1 error:
+
+   [plugin vite:worker-import-meta-url] /data/vite-project/node_modules/satellite.js/wasm-build/pthreads-release/index.js
+   Error: Build failed with 1 error:
+
+   [UNSUPPORTED_FEATURE] Error: Top-level await is currently not supported with the 'iife' output format
+          ╭─[ node_modules/satellite.js/wasm-build/pthreads-release/index.js:10430:208 ]
+          │
+    10430 │ ;return moduleRtn}export default Module;var isPthread=globalThis.self?.name?.startsWith("em-pthread");var isNode=globalThis.process?.versions?.node&&globalThis.process?.type!="renderer";if(isNode)isPthread=(await import("node:worker_threads")).workerData==="em-pthread";isPthread&&Module();
+          │                                                                                                                                                                                                                ─────────────────┬─────────────────
+          │                                                                                                                                                                                                                                 ╰───────────────────
+   ───────╯
+       at aggregateBindingErrorsIntoJsError (file:///data/vite-project/node_modules/rolldown/dist/shared/error-DL-e8-oE.mjs:48:18)
+       at unwrapBindingResult (file:///data/vite-project/node_modules/rolldown/dist/shared/error-DL-e8-oE.mjs:18:128)
+
+--- log block ---
+
+const satrec = twoline2satrec("", "");
+   const p = propagate(satrec, new Date());
+   console.log(p);
+   ```
+4. Run `npm run build`
+5. Get following build errors:
+
+   ```
+   > vite-project@0.0.0 build
+   > tsc && vite build
+
+   vite v8.0.10 building client environment for production...
+   [plugin rolldown:vite-resolve] Module "node:module" has been externalized for browser compatibility, imported by "/data/vite-project/node_modules/satellite.js/wasm-build/base-release/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+   ✓ 52 modules transformed.
+   ✗ Build failed in 85ms
+   error during build:
+   Build failed with 1 error:
+
+   [plugin vite:worker-import-meta-url] /data/vite-project/node_modules/satellite.js/wasm-build/pthreads-release/index.js
+   Error: Build failed with 1 error:
+
+   [UNSUPPORTED_FEATURE] Error: Top-level await is currently not supported with the 'iife' output format
+          ╭─[ node_modules/satellite.js/wasm-build/pthreads-release/index.js:10430:208 ]
+          │
+    10430 │ ;return moduleRtn}export default Module;var isPthread=globalThis.self?.name?.startsWith("em-pthread");var isNode=globalThis.process?.versions?.node&&globalThis.process?.type!="renderer";if(isNode)isPthread=(await import("node:worker_threads")).workerData==="em-pthread";isPthread&&Module();
+          │                                                                                                                                                                                                                ─────────────────┬─────────────────
+          │                                                                                                                                                                                                                                 ╰───────────────────
+   ───────╯
+       at aggregateBindingErrorsIntoJsError (file:///data/vite-project/node_modules/rolldown/dist/shared/error-DL-e8-oE.mjs:48:18)
+       at unwrapBindingResult (file:///data/vite-project/node_modules/rolldown/dist/shared/error-DL-e8-oE.mjs:18:128)
+       at #build (file:///data/vite-project/node_modules/rolldown/dist/shared/rolldown-build-DSxL8qiP.mjs:3317:34)
+       at async bundleWorkerEntry (file:///data/vite-project/node_modules/vite/dist/node/chunks/node.js:27188:12)
+       at async workerFileToUrl (file:///data/vite-project/node_modules/vite/dist/node/chunks/node.js:27222:17)
+
+--- log block ---
+
+const p = propagate(satrec, new Date());
+   console.log(p);
+   ```
+4. Run `npm run build`
+5. Get following build errors:
+
+   ```
+   > vite-project@0.0.0 build
+   > tsc && vite build
+
+   vite v8.0.10 building client environment for production...
+   [plugin rolldown:vite-resolve] Module "node:module" has been externalized for browser compatibility, imported by "/data/vite-project/node_modules/satellite.js/wasm-build/base-release/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+   ✓ 52 modules transformed.
+   ✗ Build failed in 85ms
+   error during build:
+   Build failed with 1 error:
+
+   [plugin vite:worker-import-meta-url] /data/vite-project/node_modules/satellite.js/wasm-build/pthreads-release/index.js
+   Error: Build failed with 1 error:
+
+   [UNSUPPORTED_FEATURE] Error: Top-level await is currently not supported with the 'iife' output format
+          ╭─[ node_modules/satellite.js/wasm-build/pthreads-release/index.js:10430:208 ]
+          │
+    10430 │ ;return moduleRtn}export default Module;var isPthread=globalThis.self?.name?.startsWith("em-pthread");var isNode=globalThis.process?.versions?.node&&globalThis.process?.type!="renderer";if(isNode)isPthread=(await import("node:worker_threads")).workerData==="em-pthread";isPthread&&Module();
+          │                                                                                                                                                                                                                ─────────────────┬─────────────────
+          │                                                                                                                                                                                                                                 ╰───────────────────
+   ───────╯
+       at aggregateBindingErrorsIntoJsError (file:///data/vite-project/node_modules/rolldown/dist/shared/error-DL-e8-oE.mjs:48:18)
+       at unwrapBindingResult (file:///data/vite-project/node_modules/rolldown/dist/shared/error-DL-e8-oE.mjs:18:128)
+       at #build (file:///data/vite-project/node_modules/rolldown/dist/shared/rolldown-build-DSxL8qiP.mjs:3317:34)
+       at async bundleWorkerEntry (file:///data/vite-project/node_modules/vite/dist/node/chunks/node.js:27188:12)
+       at async workerFileToUrl (file:///data/vite-project/node_modules/vite/dist/node/chunks/node.js:27222:17)
+       at async TransformPluginContextImpl.handler (file:///data/vite-project/node_modules/vite/dist/node/chunks/node.js:28135:23)

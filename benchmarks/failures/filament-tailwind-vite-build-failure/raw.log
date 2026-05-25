@@ -1,0 +1,105 @@
+# Filament Tailwind Vite build failure
+Source: https://github.com/filamentphp/filament/issues/15774
+Repository API: https://api.github.com/repos/filamentphp/filament/issues/15774
+
+~/workspace$ php artisan make:filament-theme
+
+   INFO  Filament theme [resources/css/filament/admin/theme.css] and [resources/css/filament/admin/tailwind.config.js] created successfully.  
+
+   WARN  Action is required to complete the theme setup:  
+
+  ⇂ It looks like you have Tailwind v4 installed. Filament uses Tailwind v3. You should downgrade your project and re-run this command with `--force`, or use the following command to compile the theme with the Tailwind v3 CLI  
+  ⇂ npx tailwindcss@3 --input ./resources/css/filament/admin/theme.css --output ./public/css/filament/admin/theme.css --config ./resources/css/filament/admin/tailwind.config.js --minify  
+  ⇂ Make sure to register the theme in the admin panel provider using `->theme(asset('css/filament/admin/theme.css'))`  
+~/workspace$ npx tailwindcss@3 --input ./resources/css/filament/admin/theme.css --output ./public/css/filament/admin/theme.css --config ./resources/css/filament/admin/tailwind.config.js --minify
+Need to install the following packages:
+tailwindcss@3.4.17
+Ok to proceed? (y) y
+
+Error: Failed to find 'tailwindcss/base'
+  in [
+    /home/runner/workspace/vendor/filament/filament/resources/css
+  ]
+    at /home/runner/.npm/_npx/20926d80ef4f8eb9/node_modules/postcss-import/lib/resolve-id.js:35:13
+    at async Promise.all (index 0)
+    at async Promise.all (index 0)
+    at async LazyResult.runAsync (/home/runner/.npm/_npx/20926d80ef4f8eb9/node_modules/postcss/lib/lazy-result.js:293:11)
+    at async build (/home/runner/.npm/_npx/20926d80ef4f8eb9/node_modules/tailwindcss/lib/cli/build/index.js:49:9)
+~/workspace$ ^C
+
+--- log block ---
+
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.0.0",
+        "axios": "^1.7.4",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^1.2.0",
+        "tailwindcss": "^3.4.17",
+        "vite": "^6.0.11"
+    }
+}
+
+--- log block ---
+
+//AdminPanelProvider.php
+return $panel
+            ->default()
+            ->id('admin')
+            ->path('admin')
+            ->login()
+            ->colors([
+                'primary' => Color::Amber,
+            ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
+
+--- log block ---
+
+~/workspace$ npm install
+
+added 94 packages, changed 1 package, and audited 172 packages in 4s
+
+42 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+~/workspace$ php artisan make:filament-theme --force
+Using npm v10.8.2
+
+   INFO  Filament theme [resources/css/filament/admin/theme.css] and [resources/css/filament/admin/tailwind.config.js] created successfully.  
+
+   INFO  Filament theme [postcss.config.js] created successfully.  
+
+   WARN  Action is required to complete the theme setup:  
+
+  ⇂ First, add a new item to the `input` array of `vite.config.js`: `resources/css/filament/admin/theme.css`  
+  ⇂ Next, register the theme in the admin panel provider using `->viteTheme('resources/css/filament/admin/theme.css')`  
+  ⇂ Finally, run `npm run build` to compile the theme  
+~/workspace$ ^C
+~/workspace$ npm run build
+
+> build
+> vite build
+
+vite v6.2.0 building for production...
+✓ 0 modules transformed.
+✗ Build failed in 361ms
+error during build:
+[@tailwindcss/vite:generate:build] Can't resolve 'tailwindcss' in '/home/runner/workspace/resources/css'
+file: /home/runner/workspace/resources/css/app.css
+    at finishWithoutResolve (/home/runner/workspace/node_modules/enhanced-resolve/lib/Resolver.js:564:18)
+    at /home/runner/workspace/node_modules/enhanced-resolve/lib/Resolver.js:656:15
+    at /home/runner/workspace/node_modules/enhanced-resolve/lib/Resolver.js:718:5
+    at eval (eval at create (/home/runner/workspace/node_modules/tapable/lib/HookCodeFactory.js:33:10), <anonymous>:15:1)
+    at /home/runner/workspace/node_modules/enhanced-resolve/lib/Resolver.js:718:5
+    at eval (eval at create (/home/runner/workspace/node_modules/tapable/lib/HookCodeFactory.js:33:10), <anonymous>:27:1)
+    at /home/runner/workspace/node_modules/enhanced-resolve/lib/DescriptionFilePlugin.js:89:43
+    at /home/runner/workspace/node_modules/enhanced-resolve/lib/Resolver.js:718:5
+    at eval (eval at create (/home/runner/workspace/node_modules/tapable/lib/HookCodeFactory.js:33:10), <anonymous>:15:1)
+    at /home/runner/workspace/node_modules/enhanced-resolve/lib/Resolver.js:718:5
