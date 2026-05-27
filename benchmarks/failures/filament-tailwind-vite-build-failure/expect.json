@@ -1,0 +1,9 @@
+{
+  "mustContain": [
+    "Can't resolve 'tailwindcss'",
+    "@tailwindcss/vite:generate:build",
+    "resources/css/app.css"
+  ],
+  "relatedFiles": ["/home/runner/workspace/resources/css/app.css"],
+  "errorCodes": []
+}

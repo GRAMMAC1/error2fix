@@ -1,0 +1,10 @@
+{
+  "mustContain": [
+    "Empty parenthesized expression",
+    "return (",
+    "@tanstack/devtools-vite",
+    "builtin:vite-transform"
+  ],
+  "relatedFiles": ["src/lib/devtools/devtools.provider.tsx"],
+  "errorCodes": []
+}

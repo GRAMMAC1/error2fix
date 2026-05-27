@@ -1,0 +1,12 @@
+{
+  "mustContain": [
+    "socketio_port",
+    "not exported",
+    "common_site_config.json",
+    "vite-plugin-pwa:build"
+  ],
+  "relatedFiles": [
+    "/home/frappe/frappe-bench/apps/hrms/frontend/src/socket.js"
+  ],
+  "errorCodes": []
+}

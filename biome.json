@@ -1,7 +1,15 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "files": {
-    "ignore": ["dist", "**/dist", ".rslib", "**/.rslib", "node_modules"]
+    "ignore": [
+      "dist",
+      "**/dist",
+      ".rslib",
+      "**/.rslib",
+      "node_modules",
+      "benchmarks/failures/**/compressed.md",
+      "benchmarks/failures/**/debug.json"
+    ]
   },
   "formatter": {
     "indentStyle": "space",

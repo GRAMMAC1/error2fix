@@ -1,0 +1,9 @@
+{
+  "mustContain": [
+    "Module not found",
+    "@fontsource/outfit/index.css",
+    "react-scripts build"
+  ],
+  "relatedFiles": ["@fontsource/outfit/index.css"],
+  "errorCodes": []
+}

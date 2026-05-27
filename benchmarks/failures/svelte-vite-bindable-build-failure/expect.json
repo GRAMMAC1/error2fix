@@ -1,0 +1,12 @@
+{
+  "mustContain": [
+    "$bindable()",
+    "$props()",
+    "bindable_invalid_location",
+    "vite-plugin-svelte:compile"
+  ],
+  "relatedFiles": [
+    "node_modules/@friendofsvelte/tipex/dist/tipex/Tipex.svelte"
+  ],
+  "errorCodes": ["bindable_invalid_location"]
+}
