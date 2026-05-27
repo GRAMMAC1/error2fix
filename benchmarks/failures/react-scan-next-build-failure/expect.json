@@ -1,0 +1,13 @@
+{
+  "mustContain": [
+    "Can't import the named export 'version'",
+    "REACT_GRAB_VERSION",
+    "default-exporting module",
+    "webpack errors"
+  ],
+  "relatedFiles": [
+    "./node_modules/react-scan/dist/core/all-environments.mjs",
+    "./src/common/components/ReactScan/index.tsx"
+  ],
+  "errorCodes": []
+}

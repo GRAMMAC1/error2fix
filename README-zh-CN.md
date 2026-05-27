@@ -122,6 +122,7 @@ failed command output
 当前前端日志 benchmark：
 
 - case 数量：7
+- 准确率通过：5/7
 - 平均减少：48.9%
 - MCP 返回内容约占原日志：51.1%
 - 当前每个 case 只调用 1 次工具
