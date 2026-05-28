@@ -61,6 +61,41 @@ function requireSessionId(sessionId: string | undefined): string {
 }
 
 describe('MCP token-budget workflow', () => {
+  it('uses a smaller compact brief for short failure logs', async () => {
+    const shortNoise = Array.from(
+      { length: 24 },
+      (_, index) => `[vite:${index}] transform cache entry skipped`,
+    ).join('\n');
+    const stderr = [
+      shortNoise,
+      'src/App.svelte:12:5 bindable_invalid_location',
+      '`$bindable()` can only be used inside a `$props()` declaration',
+    ].join('\n');
+
+    const brief = await getLatestFailureBrief({
+      command: {
+        raw: 'pnpm build',
+        cwd: process.cwd(),
+        shell: 'zsh',
+        exitCode: 1,
+      },
+      logs: {
+        stdout: '',
+        stderr,
+      },
+    });
+
+    expect(brief.ok).toBe(true);
+    const serializedBrief = JSON.stringify(brief);
+    expect(serializedBrief).toContain('bindable_invalid_location');
+    expect(brief.confidence).toBeGreaterThan(0);
+    expect(brief.evidence?.length).toBeGreaterThan(0);
+    expect(brief.diagnosis).toBeUndefined();
+    expect(brief.next).toBeUndefined();
+    expect(brief.tokenPolicy).toBeUndefined();
+    expect(serializedBrief.length).toBeLessThan(stderr.length * 1.2);
+  });
+
   it('returns a compact latest failure brief without raw log noise', async () => {
     const input = makeLargeFailureInput();
 

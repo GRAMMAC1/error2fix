@@ -9,6 +9,9 @@ import type {
   LatestRawCapture,
 } from '@error2fix/core';
 import {
+  DEFAULT_COMPACT_MAX_EVIDENCE,
+  DEFAULT_COMPACT_MAX_SNIPPET_CHARS,
+  DEFAULT_COMPACT_RAW_LOG_CHARS,
   DEFAULT_MAX_EVIDENCE,
   DEFAULT_MAX_SNIPPET_CHARS,
 } from '../constants/index.js';
@@ -131,6 +134,69 @@ function estimateReturnedChars(
   return JSON.stringify(result).length;
 }
 
+function shouldUseCompactMode(capture: LatestRawCapture): boolean {
+  return (
+    capture.stdout.length + capture.stderr.length <=
+    DEFAULT_COMPACT_RAW_LOG_CHARS
+  );
+}
+
+function buildCompactLineExcerpt(lineIndex: number, lines: string[]): string {
+  const excerptLines = [lines[lineIndex]?.trim() ?? ''];
+  for (const nextLine of lines.slice(lineIndex + 1, lineIndex + 3)) {
+    const trimmedNextLine = nextLine.trim();
+    if (
+      /\/e\/[a-z0-9_-]+/i.test(trimmedNextLine) ||
+      /^file:/i.test(trimmedNextLine)
+    ) {
+      excerptLines.push(trimmedNextLine);
+    }
+  }
+  return excerptLines.join('\n');
+}
+
+function buildCompactDiagnosisEvidence(
+  capture: LatestRawCapture,
+  analysis: CoreAnalysis,
+  coreSignals: CoreErrorSignalSet,
+): DiagnosisEvidence[] {
+  const rawLines = `${capture.stderr}\n${capture.stdout}`.split(/\r?\n/);
+  const focusedLines = unique(
+    rawLines
+      .map((line, index) => ({ line: line.trim(), index }))
+      .filter(
+        ({ line }) =>
+          !/^Repository API:/i.test(line) &&
+          hasUsefulFailureSignal(
+            line,
+            analysis.relatedFiles,
+            coreSignals.keywords,
+          ),
+      )
+      .map(({ index }) => buildCompactLineExcerpt(index, rawLines))
+      .filter((excerpt) =>
+        hasUsefulFailureSignal(
+          excerpt,
+          analysis.relatedFiles,
+          coreSignals.keywords,
+        ),
+      ),
+  );
+  const primaryExcerpt = selectBestFailureExcerpt(
+    focusedLines,
+    analysis.relatedFiles,
+    coreSignals.keywords,
+  );
+  const orderedLines = unique([primaryExcerpt ?? '', ...focusedLines]);
+
+  return orderedLines
+    .slice(0, DEFAULT_COMPACT_MAX_EVIDENCE)
+    .map((line, index) => ({
+      id: `evidence-${index + 1}`,
+      excerpt: truncate(line, DEFAULT_COMPACT_MAX_SNIPPET_CHARS) ?? line,
+    }));
+}
+
 function buildSuggestedQueries(
   analysis: CoreAnalysis,
   signals: CoreErrorSignalSet,
@@ -178,12 +244,33 @@ export async function getLatestFailureBrief(
     const noisyKeywords = input.signals.keywords.filter(
       (keyword) => !usefulKeywords.includes(keyword),
     );
+    const sessionId = makeSessionId(capture);
+    rememberBriefSession(sessionId, capture, input, analysis);
+
+    if (shouldUseCompactMode(capture)) {
+      // TODO: replace this short-log switch with a more granular output policy
+      // that can choose fields by log size, signal confidence, and client needs.
+      const compactEvidence = buildCompactDiagnosisEvidence(
+        capture,
+        analysis,
+        input.signals,
+      );
+      return getLatestFailureBriefResultSchema.parse({
+        ok: true,
+        sessionId,
+        summary: analysis.summary,
+        confidence,
+        files: analysis.relatedFiles.slice(0, 3),
+        evidence: compactEvidence.length > 0 ? compactEvidence : evidence,
+      });
+    }
+
     const resultWithoutTokenPolicy: Omit<
       GetLatestFailureBriefResult,
       'tokenPolicy'
     > = {
       ok: true,
-      sessionId: makeSessionId(capture),
+      sessionId,
       diagnosis: {
         summary: analysis.summary,
         confidence,
@@ -209,10 +296,6 @@ export async function getLatestFailureBrief(
         suggestedQueries: buildSuggestedQueries(analysis, input.signals),
       },
     };
-    const sessionId = resultWithoutTokenPolicy.sessionId;
-    if (sessionId) {
-      rememberBriefSession(sessionId, capture, input, analysis);
-    }
 
     return getLatestFailureBriefResultSchema.parse({
       ...resultWithoutTokenPolicy,

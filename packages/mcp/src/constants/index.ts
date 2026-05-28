@@ -2,6 +2,9 @@ import type { RuntimeContextSection } from '../tools/tool-protocol.js';
 
 export const DEFAULT_MAX_EVIDENCE = 3;
 export const DEFAULT_MAX_SNIPPET_CHARS = 1200;
+export const DEFAULT_COMPACT_RAW_LOG_CHARS = 2000;
+export const DEFAULT_COMPACT_MAX_EVIDENCE = 1;
+export const DEFAULT_COMPACT_MAX_SNIPPET_CHARS = 500;
 export const DEFAULT_MAX_EVIDENCE_SECTIONS = 5;
 export const DEFAULT_MAX_CHARS_PER_EVIDENCE_SECTION = 1600;
 export const EVIDENCE_CONTEXT_LINES = 3;

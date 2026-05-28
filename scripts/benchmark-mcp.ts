@@ -299,7 +299,7 @@ async function runCase(caseDir: string): Promise<BenchmarkResult> {
     totalMcpRatio,
     reductionRate: 1 - totalMcpRatio,
     toolCalls: 1 + evidenceCalls,
-    confidence: brief.diagnosis?.confidence,
+    confidence: brief.diagnosis?.confidence ?? brief.confidence,
     mustContainHit: formatHit(hits.mustContain),
     relatedFileHit: formatHit(hits.relatedFiles),
     errorCodeHit: formatHit(hits.errorCodes),
