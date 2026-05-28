@@ -123,12 +123,12 @@ failed command output
 
 - case 数量：7
 - 准确率通过：5/7
-- 平均减少：48.9%
-- MCP 返回内容约占原日志：51.1%
+- 平均减少：60.9%
+- MCP 返回内容约占原日志：39.1%
 - 当前每个 case 只调用 1 次工具
 - 汇总报告：`benchmarks/reports/report.md`
 
-这组数据还很早期，而且日志普遍不算长。短日志会让结构化返回的固定开销变得明显，例如 `svelte-vite-bindable-build-failure` 现在就是负压缩率：MCP 返回比原日志还大。这个 case 已经作为后续优化项记录下来。
+这组数据还很早期，而且日志普遍不算长。短日志会让结构化返回的固定开销变得明显，所以 MCP brief 会对较小的原始日志使用更小的 compact 输出。
 
 运行 benchmark：
 
