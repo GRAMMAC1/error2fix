@@ -66,6 +66,11 @@ export const getLatestFailureBriefInputSchema = {
 export const getLatestFailureBriefResultSchema = z.object({
   ok: z.boolean(),
   sessionId: z.string().optional(),
+  summary: z.string().optional(),
+  confidence: z.number().min(0).max(1).optional(),
+  excerpt: z.string().optional(),
+  files: z.array(z.string()).optional(),
+  evidence: z.array(diagnosisEvidenceSchema).optional(),
   diagnosis: z
     .object({
       summary: z.string(),
