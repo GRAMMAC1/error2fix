@@ -1,8 +1,8 @@
 # @error2fix/mcp
 
-MCP server for agent-facing `error2fix` diagnosis workflows.
+MCP server for agent-facing frontend `error2fix` diagnosis workflows.
 
-This package exposes compact failure-analysis tools for IDEs and coding agents. The client provides the raw failed command output, and the server returns small, structured responses that are safer for an LLM token budget than full log replay.
+This package exposes compact frontend failure-analysis tools for IDEs and coding agents. It is currently focused on JavaScript/TypeScript frontend workflows such as package scripts, bundlers, framework compile errors, and dependency resolution. The client provides the raw failed command output, and the server returns small, structured responses that are safer for an LLM token budget than full log replay.
 
 ## Tools
 
