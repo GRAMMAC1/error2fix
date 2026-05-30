@@ -124,8 +124,7 @@ rerun the same compression workflow locally.
 Current frontend benchmark snapshot:
 
 - Cases: 7
-- Accuracy passing: 5/7
-- Tool-call passing: 7/7
+- Signal matches: 21/26
 - Average reduction: 60.9%
 - Average total MCP ratio: 39.1%
 - Tool calls: 1 per case in the current run

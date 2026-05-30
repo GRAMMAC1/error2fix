@@ -1,5 +1,5 @@
 {
-  "mustContain": [
+  "signals": [
     "socketio_port",
     "not exported",
     "common_site_config.json",

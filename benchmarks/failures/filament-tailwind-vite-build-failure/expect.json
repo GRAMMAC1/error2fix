@@ -1,5 +1,5 @@
 {
-  "mustContain": [
+  "signals": [
     "Can't resolve 'tailwindcss'",
     "@tailwindcss/vite:generate:build",
     "resources/css/app.css"

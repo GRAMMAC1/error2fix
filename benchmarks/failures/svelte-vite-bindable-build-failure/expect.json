@@ -1,5 +1,5 @@
 {
-  "mustContain": [
+  "signals": [
     "$bindable()",
     "$props()",
     "bindable_invalid_location",

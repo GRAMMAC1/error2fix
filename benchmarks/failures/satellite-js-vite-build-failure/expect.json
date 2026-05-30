@@ -1,10 +1,5 @@
 {
-  "mustContain": [
-    "UNSUPPORTED_FEATURE",
-    "Top-level await",
-    "iife",
-    "satellite.js"
-  ],
+  "signals": ["UNSUPPORTED_FEATURE", "Top-level await", "iife", "satellite.js"],
   "relatedFiles": [
     "node_modules/satellite.js/wasm-build/pthreads-release/index.js"
   ],

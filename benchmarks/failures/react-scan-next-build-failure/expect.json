@@ -1,5 +1,5 @@
 {
-  "mustContain": [
+  "signals": [
     "Can't import the named export 'version'",
     "REACT_GRAB_VERSION",
     "default-exporting module",

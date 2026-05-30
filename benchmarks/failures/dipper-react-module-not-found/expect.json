@@ -1,5 +1,5 @@
 {
-  "mustContain": [
+  "signals": [
     "Module not found",
     "@fontsource/outfit/index.css",
     "react-scripts build"
