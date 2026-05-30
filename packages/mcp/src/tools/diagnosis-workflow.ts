@@ -24,9 +24,10 @@ export function registerDiagnosisWorkflowTools(server: McpServer): void {
     {
       title: 'Get Latest Failure Brief',
       description: [
-        'Analyze raw terminal failure logs provided by the LLM client and return a compact, high-signal diagnosis. Always pass both logs.stdout and logs.stderr, using an empty string for streams with no output.',
+        'Analyze raw frontend project failure logs provided by the LLM client and return a compact, high-signal diagnosis. Always pass both logs.stdout and logs.stderr, using an empty string for streams with no output.',
+        'Best suited for JavaScript/TypeScript frontend workflows: npm/pnpm/yarn scripts, Vite, Next.js, React, Svelte, Tailwind, bundlers, test runners, dependency resolution, and framework compile errors.',
         'Use this tool first before sending raw logs into model context.',
-        'It returns a compact diagnosis, focused evidence excerpts, likely root-cause hints, and guidance on whether enough information is available to answer directly.',
+        'It returns a compact frontend failure diagnosis, focused evidence excerpts, likely root-cause hints, and guidance on whether enough information is available to answer directly.',
         'This tool is optimized to reduce token usage by accepting raw stdout/stderr as tool input and returning only compact structured evidence.',
         WORKFLOW_DESCRIPTION,
       ].join(' '),
@@ -52,7 +53,7 @@ export function registerDiagnosisWorkflowTools(server: McpServer): void {
     {
       title: 'Query Failure Evidence',
       description: [
-        'Query focused evidence from the latest captured failure log.',
+        'Query focused frontend failure evidence from the latest captured failure log.',
         'Use this only when e2f_get_latest_failure_brief is insufficient.',
         'Prefer querying by evidence IDs returned by the diagnosis.',
         'This tool returns a few focused evidence sections instead of full raw logs.',
@@ -80,8 +81,8 @@ export function registerDiagnosisWorkflowTools(server: McpServer): void {
     {
       title: 'Get Runtime Context',
       description: [
-        'Return safe runtime and workspace context for the latest captured failure.',
-        'Use this when diagnosis depends on command facts, OS, shell, package manager, runtime versions, workspace files, git state, or allowlisted environment variables.',
+        'Return safe frontend runtime and workspace context for the latest captured failure.',
+        'Use this when diagnosis depends on frontend command facts, OS, shell, package manager, Node/runtime versions, workspace files, git state, or allowlisted environment variables.',
         'Sensitive environment variables are never returned.',
         WORKFLOW_DESCRIPTION,
       ].join(' '),

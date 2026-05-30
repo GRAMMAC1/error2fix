@@ -14,4 +14,4 @@ export const MCP_SERVER_INFO = {
 };
 
 export const MCP_SERVER_DESCRIPTION =
-  'MCP server for token-efficient error2fix diagnosis workflows: compact failure diagnosis, focused evidence queries, and safe runtime context.';
+  'MCP server for token-efficient frontend failure diagnosis workflows: compact JavaScript/TypeScript build, test, dependency, bundler, and framework error briefs with focused evidence queries.';

@@ -5,7 +5,7 @@
 这个项目目前有两部分：
 
 - CLI：记录终端里失败的命令，方便用户自己查看最近一次失败。
-- MCP Server：给 IDE 或 Agent 调用，让模型先拿到整理过的错误信息，而不是直接读完整日志。
+- MCP Server：给 IDE 或 Agent 调用，当前主要面向前端项目，让模型先拿到整理过的错误信息，而不是直接读完整日志。
 
 这个项目想解决的问题很简单：失败日志通常很长，但真正有用的内容可能只有几行。
 
@@ -88,7 +88,9 @@ Cursor、Claude Desktop、Cline 等客户端一般使用 `mcpServers`：
 
 `error2fix` 走的是 post-failure 流程。用户不需要把命令改成 `e2f run -- <command>` 这种形式，而是继续正常执行命令；失败之后，再用 `e2f` 或 MCP 工具分析。
 
-在 Agent 场景下，MCP 的调用流程尽量保持简单：
+在 Agent 场景下，MCP 目前先聚焦前端项目的失败日志，例如 npm/pnpm/yarn 脚本、Vite、Next.js、React、Svelte、Tailwind、bundler、测试工具、依赖解析和框架编译错误。它还不是一个通用编程语言诊断工具。
+
+MCP 的调用流程尽量保持简单：
 
 1. 先拿一份压缩后的失败摘要。
 2. 工具缓存这次失败，返回 `sessionId`。
@@ -99,11 +101,11 @@ Cursor、Claude Desktop、Cline 等客户端一般使用 `mcpServers`：
 
 ## MCP 工具
 
-当前提供三个工具：
+当前提供三个面向前端失败诊断的工具：
 
-- `e2f_get_latest_failure_brief`：接收 `stdout`、`stderr` 和可选的命令信息，返回错误摘要、证据 ID、token 相关统计和 `sessionId`。
-- `e2f_query_failure_evidence`：根据 `sessionId` 查询更具体的日志片段，不返回完整原始日志。
-- `e2f_get_runtime_context`：根据 `sessionId` 返回客户端提供的命令、工作目录、shell、系统、git 或安全环境变量信息。
+- `e2f_get_latest_failure_brief`：接收前端失败命令的 `stdout`、`stderr` 和可选命令信息，返回错误摘要、证据 ID、token 相关统计和 `sessionId`。
+- `e2f_query_failure_evidence`：根据 `sessionId` 查询更具体的前端失败日志片段，不返回完整原始日志。
+- `e2f_get_runtime_context`：根据 `sessionId` 返回客户端提供的命令、工作目录、shell、系统、git 或安全环境变量信息，用于补充前端修复所需上下文。
 
 典型流程：
 
