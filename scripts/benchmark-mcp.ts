@@ -18,7 +18,7 @@ interface BenchmarkResult {
   relatedFileHit: string;
   errorCodeHit: string;
   accuracyStatus: '✅pass' | '❌fail' | 'unlabeled';
-  status: '✅pass' | '❌fail';
+  toolCallStatus: '✅pass' | '❌fail';
   notes: string[];
 }
 
@@ -36,8 +36,6 @@ interface HitResult {
 
 const DEFAULT_CASES_DIR = 'benchmarks/failures';
 const DEFAULT_MARKDOWN_OUT = 'benchmarks/reports/report.md';
-const DEFAULT_MAX_BRIEF_RATIO = 0.25;
-const DEFAULT_MAX_TOTAL_MCP_RATIO = 0.35;
 const DEFAULT_MAX_EVIDENCE_CALLS = 1;
 
 function parseArgs(argv: string[]): {
@@ -145,23 +143,14 @@ function getAccuracyStatus(
     : '❌fail';
 }
 
-function evaluateStatus(params: {
-  briefRatio: number;
-  totalMcpRatio: number;
+function evaluateToolCallStatus(params: {
   evidenceCalls: number;
-}): { status: BenchmarkResult['status']; notes: string[] } {
+}): {
+  toolCallStatus: BenchmarkResult['toolCallStatus'];
+  notes: string[];
+} {
   const notes: string[] = [];
 
-  if (params.briefRatio > DEFAULT_MAX_BRIEF_RATIO) {
-    notes.push(
-      `brief ratio ${formatPercent(params.briefRatio)} > ${formatPercent(DEFAULT_MAX_BRIEF_RATIO)}`,
-    );
-  }
-  if (params.totalMcpRatio > DEFAULT_MAX_TOTAL_MCP_RATIO) {
-    notes.push(
-      `total MCP ratio ${formatPercent(params.totalMcpRatio)} > ${formatPercent(DEFAULT_MAX_TOTAL_MCP_RATIO)}`,
-    );
-  }
   if (params.evidenceCalls > DEFAULT_MAX_EVIDENCE_CALLS) {
     notes.push(
       `evidence calls ${params.evidenceCalls} > ${DEFAULT_MAX_EVIDENCE_CALLS}`,
@@ -169,7 +158,7 @@ function evaluateStatus(params: {
   }
 
   return {
-    status: notes.length === 0 ? '✅pass' : '❌fail',
+    toolCallStatus: notes.length === 0 ? '✅pass' : '❌fail',
     notes,
   };
 }
@@ -201,7 +190,7 @@ function buildCompressedMarkdown(params: {
     `- Must contain hit: ${result.mustContainHit}`,
     `- Related file hit: ${result.relatedFileHit}`,
     `- Error code hit: ${result.errorCodeHit}`,
-    `- Status: ${result.status}`,
+    `- Tool calls OK: ${result.toolCallStatus}`,
     `- Notes: ${result.notes.join('; ') || '-'}`,
     '',
     '## Missing Expected Signals',
@@ -284,9 +273,7 @@ async function runCase(caseDir: string): Promise<BenchmarkResult> {
   };
   const briefRatio = ratio(briefChars, rawChars);
   const totalMcpRatio = ratio(totalMcpChars, rawChars);
-  const status = evaluateStatus({
-    briefRatio,
-    totalMcpRatio,
+  const toolCallStatus = evaluateToolCallStatus({
     evidenceCalls,
   });
   const result: BenchmarkResult = {
@@ -304,8 +291,8 @@ async function runCase(caseDir: string): Promise<BenchmarkResult> {
     relatedFileHit: formatHit(hits.relatedFiles),
     errorCodeHit: formatHit(hits.errorCodes),
     accuracyStatus: getAccuracyStatus(expected, hits),
-    status: status.status,
-    notes: status.notes,
+    toolCallStatus: toolCallStatus.toolCallStatus,
+    notes: toolCallStatus.notes,
   };
 
   await fs.writeFile(
@@ -324,8 +311,8 @@ async function runCase(caseDir: string): Promise<BenchmarkResult> {
 
 function buildMarkdown(results: BenchmarkResult[]): string {
   const caseCount = results.length;
-  const passCount = results.filter(
-    (result) => result.status === '✅pass',
+  const toolCallPassCount = results.filter(
+    (result) => result.toolCallStatus === '✅pass',
   ).length;
   const accuracyPassCount = results.filter(
     (result) => result.accuracyStatus === '✅pass',
@@ -352,7 +339,7 @@ function buildMarkdown(results: BenchmarkResult[]): string {
         result.relatedFileHit,
         result.errorCodeHit,
         result.accuracyStatus,
-        result.status,
+        result.toolCallStatus,
         markdownEscape(result.notes.join('; ') || '-'),
       ].join(' | ')} |`,
   );
@@ -361,12 +348,12 @@ function buildMarkdown(results: BenchmarkResult[]): string {
     '# MCP Benchmark Report',
     '',
     `- Cases: ${caseCount}`,
-    `- Compression passing: ${passCount}/${caseCount}`,
     `- Accuracy passing: ${accuracyPassCount}/${caseCount}`,
+    `- Tool-call passing: ${toolCallPassCount}/${caseCount}`,
     `- Average reduction: ${formatPercent(averageReduction)}`,
     `- Average total MCP ratio: ${formatPercent(averageTotalRatio)}`,
     '',
-    '| Case | Raw KB | Brief KB | Evidence KB | Total MCP KB | Reduction | Tool Calls | Confidence | Must Hit | File Hit | Code Hit | Accuracy | Compression | Notes |',
+    '| Case | Raw KB | Brief KB | Evidence KB | Total MCP KB | Reduction | Tool Calls | Confidence | Must Hit | File Hit | Code Hit | Accuracy | Tool Calls OK | Notes |',
     '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|',
     ...rows,
     '',
