@@ -14,16 +14,15 @@ interface BenchmarkResult {
   reductionRate: number;
   toolCalls: number;
   confidence?: number;
-  mustContainHit: string;
+  signalMatched: number;
+  signalTotal: number;
+  signalHit: string;
   relatedFileHit: string;
   errorCodeHit: string;
-  accuracyStatus: '✅pass' | '❌fail' | 'unlabeled';
-  toolCallStatus: '✅pass' | '❌fail';
-  notes: string[];
 }
 
 interface ExpectedSignals {
-  mustContain?: string[];
+  signals?: string[];
   relatedFiles?: string[];
   errorCodes?: string[];
 }
@@ -36,7 +35,6 @@ interface HitResult {
 
 const DEFAULT_CASES_DIR = 'benchmarks/failures';
 const DEFAULT_MARKDOWN_OUT = 'benchmarks/reports/report.md';
-const DEFAULT_MAX_EVIDENCE_CALLS = 1;
 
 function parseArgs(argv: string[]): {
   casesDir: string;
@@ -125,51 +123,13 @@ function formatHit(result: HitResult): string {
   return `${result.matched}/${result.total}`;
 }
 
-function getAccuracyStatus(
-  expected: ExpectedSignals | undefined,
-  hits: {
-    mustContain: HitResult;
-    relatedFiles: HitResult;
-    errorCodes: HitResult;
-  },
-): BenchmarkResult['accuracyStatus'] {
-  if (!expected) {
-    return 'unlabeled';
-  }
-  return [hits.mustContain, hits.relatedFiles, hits.errorCodes].every(
-    (hit) => hit.matched === hit.total,
-  )
-    ? '✅pass'
-    : '❌fail';
-}
-
-function evaluateToolCallStatus(params: {
-  evidenceCalls: number;
-}): {
-  toolCallStatus: BenchmarkResult['toolCallStatus'];
-  notes: string[];
-} {
-  const notes: string[] = [];
-
-  if (params.evidenceCalls > DEFAULT_MAX_EVIDENCE_CALLS) {
-    notes.push(
-      `evidence calls ${params.evidenceCalls} > ${DEFAULT_MAX_EVIDENCE_CALLS}`,
-    );
-  }
-
-  return {
-    toolCallStatus: notes.length === 0 ? '✅pass' : '❌fail',
-    notes,
-  };
-}
-
 function buildCompressedMarkdown(params: {
   result: BenchmarkResult;
   brief: Awaited<ReturnType<typeof getLatestFailureBrief>>;
   evidence: Awaited<ReturnType<typeof queryFailureEvidence>> | undefined;
   expected: ExpectedSignals | undefined;
   hits: {
-    mustContain: HitResult;
+    signals: HitResult;
     relatedFiles: HitResult;
     errorCodes: HitResult;
   };
@@ -186,16 +146,13 @@ function buildCompressedMarkdown(params: {
     `- Reduction: ${formatPercent(result.reductionRate)}`,
     `- Tool calls: ${result.toolCalls}`,
     `- Confidence: ${result.confidence?.toFixed(2) ?? 'n/a'}`,
-    `- Accuracy: ${result.accuracyStatus}`,
-    `- Must contain hit: ${result.mustContainHit}`,
+    `- Signal hit: ${result.signalHit}`,
     `- Related file hit: ${result.relatedFileHit}`,
     `- Error code hit: ${result.errorCodeHit}`,
-    `- Tool calls OK: ${result.toolCallStatus}`,
-    `- Notes: ${result.notes.join('; ') || '-'}`,
     '',
     '## Missing Expected Signals',
     '',
-    `- Must contain: ${hits.mustContain.missing.join(', ') || '-'}`,
+    `- Signals: ${hits.signals.missing.join(', ') || '-'}`,
     `- Related files: ${hits.relatedFiles.missing.join(', ') || '-'}`,
     `- Error codes: ${hits.errorCodes.missing.join(', ') || '-'}`,
     '',
@@ -267,15 +224,12 @@ async function runCase(caseDir: string): Promise<BenchmarkResult> {
   const structuredOutput = { brief, evidence };
   const searchableOutput = JSON.stringify(structuredOutput);
   const hits = {
-    mustContain: checkTerms(expected?.mustContain, searchableOutput),
+    signals: checkTerms(expected?.signals, searchableOutput),
     relatedFiles: checkTerms(expected?.relatedFiles, searchableOutput),
     errorCodes: checkTerms(expected?.errorCodes, searchableOutput),
   };
   const briefRatio = ratio(briefChars, rawChars);
   const totalMcpRatio = ratio(totalMcpChars, rawChars);
-  const toolCallStatus = evaluateToolCallStatus({
-    evidenceCalls,
-  });
   const result: BenchmarkResult = {
     id,
     rawChars,
@@ -287,12 +241,11 @@ async function runCase(caseDir: string): Promise<BenchmarkResult> {
     reductionRate: 1 - totalMcpRatio,
     toolCalls: 1 + evidenceCalls,
     confidence: brief.diagnosis?.confidence ?? brief.confidence,
-    mustContainHit: formatHit(hits.mustContain),
+    signalMatched: hits.signals.matched,
+    signalTotal: hits.signals.total,
+    signalHit: formatHit(hits.signals),
     relatedFileHit: formatHit(hits.relatedFiles),
     errorCodeHit: formatHit(hits.errorCodes),
-    accuracyStatus: getAccuracyStatus(expected, hits),
-    toolCallStatus: toolCallStatus.toolCallStatus,
-    notes: toolCallStatus.notes,
   };
 
   await fs.writeFile(
@@ -311,12 +264,14 @@ async function runCase(caseDir: string): Promise<BenchmarkResult> {
 
 function buildMarkdown(results: BenchmarkResult[]): string {
   const caseCount = results.length;
-  const toolCallPassCount = results.filter(
-    (result) => result.toolCallStatus === '✅pass',
-  ).length;
-  const accuracyPassCount = results.filter(
-    (result) => result.accuracyStatus === '✅pass',
-  ).length;
+  const signalMatched = results.reduce(
+    (sum, result) => sum + result.signalMatched,
+    0,
+  );
+  const signalTotal = results.reduce(
+    (sum, result) => sum + result.signalTotal,
+    0,
+  );
   const averageReduction =
     results.reduce((sum, result) => sum + result.reductionRate, 0) /
     Math.max(1, caseCount);
@@ -335,12 +290,9 @@ function buildMarkdown(results: BenchmarkResult[]): string {
         formatPercent(result.reductionRate),
         String(result.toolCalls),
         result.confidence?.toFixed(2) ?? 'n/a',
-        result.mustContainHit,
+        result.signalHit,
         result.relatedFileHit,
         result.errorCodeHit,
-        result.accuracyStatus,
-        result.toolCallStatus,
-        markdownEscape(result.notes.join('; ') || '-'),
       ].join(' | ')} |`,
   );
 
@@ -348,13 +300,12 @@ function buildMarkdown(results: BenchmarkResult[]): string {
     '# MCP Benchmark Report',
     '',
     `- Cases: ${caseCount}`,
-    `- Accuracy passing: ${accuracyPassCount}/${caseCount}`,
-    `- Tool-call passing: ${toolCallPassCount}/${caseCount}`,
+    `- Signal matches: ${signalMatched}/${signalTotal}`,
     `- Average reduction: ${formatPercent(averageReduction)}`,
     `- Average total MCP ratio: ${formatPercent(averageTotalRatio)}`,
     '',
-    '| Case | Raw KB | Brief KB | Evidence KB | Total MCP KB | Reduction | Tool Calls | Confidence | Must Hit | File Hit | Code Hit | Accuracy | Tool Calls OK | Notes |',
-    '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|',
+    '| Case | Raw KB | Brief KB | Evidence KB | Total MCP KB | Reduction | Tool Calls | Confidence | Signal Hit | File Hit | Code Hit |',
+    '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
     ...rows,
     '',
   ].join('\n');

@@ -1,5 +1,5 @@
 {
-  "mustContain": [
+  "signals": [
     "Empty parenthesized expression",
     "return (",
     "@tanstack/devtools-vite",
