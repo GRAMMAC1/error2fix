@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "generatedFrom": "pnpm harness:mcp:update",
+  "cases": {
+    "dipper-react-module-not-found": {
+      "signalMatched": 2,
+      "signalTotal": 3,
+      "relatedFileMatched": 1,
+      "relatedFileTotal": 1,
+      "errorCodeMatched": 0,
+      "errorCodeTotal": 0,
+      "toolCalls": 1,
+      "totalMcpChars": 1347
+    },
+    "filament-tailwind-vite-build-failure": {
+      "signalMatched": 3,
+      "signalTotal": 3,
+      "relatedFileMatched": 1,
+      "relatedFileTotal": 1,
+      "errorCodeMatched": 0,
+      "errorCodeTotal": 0,
+      "toolCalls": 1,
+      "totalMcpChars": 1806
+    },
+    "frappe-hrms-vite-pwa-build-failure": {
+      "signalMatched": 4,
+      "signalTotal": 4,
+      "relatedFileMatched": 1,
+      "relatedFileTotal": 1,
+      "errorCodeMatched": 0,
+      "errorCodeTotal": 0,
+      "toolCalls": 1,
+      "totalMcpChars": 2062
+    },
+    "react-scan-next-build-failure": {
+      "signalMatched": 0,
+      "signalTotal": 4,
+      "relatedFileMatched": 2,
+      "relatedFileTotal": 2,
+      "errorCodeMatched": 0,
+      "errorCodeTotal": 0,
+      "toolCalls": 1,
+      "totalMcpChars": 1295
+    },
+    "satellite-js-vite-build-failure": {
+      "signalMatched": 4,
+      "signalTotal": 4,
+      "relatedFileMatched": 1,
+      "relatedFileTotal": 1,
+      "errorCodeMatched": 1,
+      "errorCodeTotal": 1,
+      "toolCalls": 1,
+      "totalMcpChars": 3516
+    },
+    "svelte-vite-bindable-build-failure": {
+      "signalMatched": 4,
+      "signalTotal": 4,
+      "relatedFileMatched": 1,
+      "relatedFileTotal": 1,
+      "errorCodeMatched": 1,
+      "errorCodeTotal": 1,
+      "toolCalls": 1,
+      "totalMcpChars": 580
+    },
+    "tanstack-vite-devtools-build-failure": {
+      "signalMatched": 4,
+      "signalTotal": 4,
+      "relatedFileMatched": 1,
+      "relatedFileTotal": 1,
+      "errorCodeMatched": 0,
+      "errorCodeTotal": 0,
+      "toolCalls": 1,
+      "totalMcpChars": 1483
+    }
+  }
+}

@@ -5,6 +5,7 @@
   },
   "include": [
     "packages/**/*.ts",
+    "harness/**/*.ts",
     "test/**/*.ts",
     "e2e/**/*.ts",
     "scripts/**/*.ts"
