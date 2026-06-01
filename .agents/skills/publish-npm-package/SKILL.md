@@ -30,17 +30,31 @@ Use this skill when the user asks to publish, release, bump, version, or ship th
 
 Follow this order. Do not repeat `pnpm verify` or `pnpm build` later unless a command changes files after validation.
 
-### 1. Confirm git is clean
+### 1. Start from a clean master branch
 
-Run:
+Check the worktree before switching branches:
 
-   ```bash
-   git status --short
-   git branch --show-current
-   git log --oneline --decorate --max-count=5
-   ```
+```bash
+git status --short
+git branch --show-current
+```
 
-Stop if `git status --short` is not empty, unless the only changes are release files created during this workflow.
+If `git status --short` is not empty, stop the release workflow and ask the user to manually clear the local worktree. Do not stash, commit, reset, or discard changes for the user.
+
+If the current branch is not `master`, switch to `master` only after confirming the worktree is clean:
+
+```bash
+git switch master
+git status --short
+```
+
+Stop if the worktree is not clean after switching to `master`.
+
+Then inspect the recent release base:
+
+```bash
+git log --oneline --decorate --max-count=5
+```
 
 ### 2. Validate before versioning
 
