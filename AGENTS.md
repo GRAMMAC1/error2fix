@@ -12,7 +12,7 @@
   - `packages/cli`
   - `packages/mcp`
 
-`error2fix` is a post-failure terminal diagnosis CLI. Users do not wrap commands with `e2f`. They run `e2f init` once, let normal shell commands fail, and then run `e2f` to inspect the latest captured failure context.
+`error2fix` is a post-failure frontend failure diagnosis toolkit for CLI users and AI coding agents. Users do not wrap commands with `e2f`. They run `e2f init` once, let normal shell commands fail, and then use the CLI or MCP tools to inspect compact failure context.
 
 ## Key Commands
 
@@ -20,15 +20,20 @@
 - Build: `pnpm build`
 - Run tests: `pnpm test`
 - Typecheck: `pnpm typecheck`
+- Verify: `pnpm verify`
 - Format: `pnpm format`
 - Biome check: `pnpm check`
 - Biome lint: `pnpm lint`
+- MCP harness regression check: `pnpm harness:mcp`
+- Update MCP harness baseline: `pnpm harness:mcp:update`
 
 ## Repository Structure
 
 - `packages/core/src/`: shared diagnosis logic, parsing, storage, prompt state, and eval logic
 - `packages/cli/src/`: CLI commands, shell integration, and terminal formatting
-- `packages/mcp/src/`: MCP server scaffold and future MCP integrations
+- `packages/mcp/src/`: frontend-focused MCP tools for agent-facing failure diagnosis
+- `harness/`: MCP benchmark harness, regression baseline, and verification scripts
+- `benchmarks/`: frontend failure log cases, expected signals, and generated reports
 - `test/`: unit and white-box integration tests
 - `e2e/`: black-box CLI tests
 
@@ -43,12 +48,13 @@
 
 ## Testing Expectations
 
-Before finishing non-trivial changes, run the relevant checks:
+Before finishing non-trivial changes, agents MUST run:
 
-- `pnpm check`
-- `pnpm lint`
-- `pnpm typecheck`
-- `pnpm test`
+- `pnpm verify`
+
+`pnpm verify` includes Biome checks, linting, typecheck, tests, and the MCP harness regression check.
+
+If a diagnosis strategy or MCP behavior intentionally changes the benchmark baseline, agents MUST explain why, run `pnpm harness:mcp:update`, then run `pnpm verify`.
 
 For CLI behavior changes, prefer adding or updating tests in `e2e/` when the behavior is user-visible.
 
