@@ -10,6 +10,8 @@ Use this skill when the user asks to publish, release, bump, version, or ship th
 ## Guardrails
 
 - Prefer the GitHub Actions OIDC publish workflow. Do not run `npm publish`, `pnpm publish`, or `changeset publish` locally unless the user explicitly requests a local publish.
+- Do not run `npm whoami`; local npm identity is irrelevant because publishing must use GitHub OIDC.
+- Do not run `npm view` as a publish-success check; npm email notification is the expected confirmation path.
 - Do not publish from a dirty worktree.
 - Do not amend existing commits unless explicitly requested.
 - Keep `@error2fix/core` private unless the user explicitly changes the package strategy.
@@ -21,12 +23,16 @@ Use this skill when the user asks to publish, release, bump, version, or ship th
 - Private package: `@error2fix/core`.
 - Versioning: Changesets.
 - Publish command used by CI: `pnpm release`.
-- Publish trigger: GitHub release `published` event in `.github/workflows/npm-publish.yml`.
+- Publish trigger: pushing a `v*` git tag triggers `.github/workflows/npm-publish.yml`.
 - npm auth: trusted publishing / OIDC, not a local `NPM_TOKEN`.
 
-## Preflight
+## Release Workflow
 
-1. Check repository state:
+Follow this order. Do not repeat `pnpm verify` or `pnpm build` later unless a command changes files after validation.
+
+### 1. Confirm git is clean
+
+Run:
 
    ```bash
    git status --short
@@ -34,86 +40,70 @@ Use this skill when the user asks to publish, release, bump, version, or ship th
    git log --oneline --decorate --max-count=5
    ```
 
-2. Inspect release configuration:
+Stop if `git status --short` is not empty, unless the only changes are release files created during this workflow.
 
-   ```bash
-   cat package.json
-   cat packages/cli/package.json
-   cat packages/mcp/package.json
-   cat .github/workflows/npm-publish.yml
-   ```
+### 2. Validate before versioning
 
-3. Run verification before versioning or release:
+Run once before changing versions:
 
    ```bash
    pnpm verify
    pnpm build
    ```
 
-## Versioning Workflow
+If either command fails, fix the failure before continuing. Do not create version commits or tags before this step passes.
 
-Use this when unreleased changes need a package version bump.
+### 3. Bump versions and generate changelog
 
-1. Check pending changesets:
+Create or confirm the changeset for the requested version, then run:
 
-   ```bash
-   find .changeset -maxdepth 1 -type f -name "*.md" -print
-   ```
+```bash
+pnpm version:packages
+```
 
-2. If no changeset exists, ask the user for the release type and changelog intent before creating one.
+For a requested exact version, confirm the generated public package versions match it:
 
-3. Apply version changes:
+```bash
+node -p "require('./packages/cli/package.json').version"
+node -p "require('./packages/mcp/package.json').version"
+```
 
-   ```bash
-   pnpm version:packages
-   ```
+If Changesets updates formatting, run:
 
-4. Review changed files:
+```bash
+pnpm format
+```
 
-   ```bash
-   git diff -- package.json pnpm-lock.yaml packages/cli/package.json packages/mcp/package.json .changeset
-   ```
+### 4. Record changelog, commit, tag, and push
 
-5. Commit the version update:
+Read and summarize the generated changelog entries:
 
-   ```bash
-   git add package.json pnpm-lock.yaml packages/cli/package.json packages/mcp/package.json .changeset
-   git commit -m "chore: version packages"
-   ```
+```bash
+git diff -- packages/cli/CHANGELOG.md packages/mcp/CHANGELOG.md
+```
 
-6. Push a branch and open a PR to `master`. Do not publish until the version PR is merged.
+Commit the version update:
 
-## Publishing Workflow
+```bash
+git add package.json pnpm-lock.yaml packages/cli/package.json packages/mcp/package.json packages/cli/CHANGELOG.md packages/mcp/CHANGELOG.md .changeset
+git commit -m "chore: release packages <version>"
+```
 
-Use this after the version bump is merged to `master`.
+Create and push the release tag:
 
-1. Ensure local `master` is clean and up to date:
+```bash
+git tag -a v<version> -m "v<version>"
+git push origin HEAD
+git push origin v<version>
+```
 
-   ```bash
-   git switch master
-   git pull --ff-only
-   git status --short
-   ```
+Pushing the tag starts the GitHub Actions OIDC publish workflow. Report the pushed commit, tag, package versions, changelog summary, and that publishing is now owned by GitHub Actions.
 
-2. Confirm package versions:
+## Publish Trigger
 
-   ```bash
-   node -p "require('./packages/cli/package.json').version"
-   node -p "require('./packages/mcp/package.json').version"
-   ```
+Publishing starts automatically after the `v*` tag is pushed. Manually creating a GitHub Release is still allowed, but it is optional and should not be treated as a required release step. Do not run local npm verification commands afterward.
 
-3. Create a GitHub release for the version being published. Prefer a tag that clearly matches the release, for example `v0.3.1`.
-
-4. After publishing the GitHub release, inspect the `Publish npm packages` workflow run and report whether it succeeded.
-
-5. Verify npm after CI completes:
-
-   ```bash
-   npm view @error2fix/cli version
-   npm view @error2fix/mcp version
-   ```
-
-## If Publishing Fails
+## If GitHub Actions Publishing Fails
 
 - Check the GitHub Actions logs first.
 - For `E404 Not Found` on scoped packages, verify the package exists or that npm org/package permissions allow first publish with public access.
