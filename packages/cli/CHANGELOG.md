@@ -1,5 +1,11 @@
 # @error2fix/cli
 
+## 0.4.1
+
+### Patch Changes
+
+- Release 0.4.1.
+
 ## 0.4.0
 
 ### Minor Changes
