@@ -2,7 +2,7 @@
   "name": "@error2fix/mcp",
   "version": "0.4.1",
   "type": "module",
-  "description": "MCP server for error2fix terminal failure diagnosis.",
+  "description": "MCP server that gives coding agents compressed frontend failure context.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GRAMMAC1/error2fix.git",
