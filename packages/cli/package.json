@@ -1,7 +1,7 @@
 {
   "name": "@error2fix/cli",
   "version": "0.4.1",
-  "description": "Post-failure terminal diagnosis assistant for developers.",
+  "description": "Capture and summarize post-failure frontend build and test logs.",
   "type": "module",
   "repository": {
     "type": "git",
