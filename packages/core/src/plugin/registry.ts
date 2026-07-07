@@ -1,7 +1,7 @@
+import { dependencyResolutionPlugin } from '../plugins/dependency-resolution.js';
+import { frontendCompilerPlugin } from '../plugins/frontend-compiler.js';
+import { frontendRuntimePlugin } from '../plugins/frontend-runtime.js';
 import { genericPlugin } from '../plugins/generic.js';
-import { reactPlugin } from '../plugins/react.js';
-import { typescriptPlugin } from '../plugins/typescript.js';
-import { vuePlugin } from '../plugins/vue.js';
 import type { Error2FixPlugin, PluginRegistry } from '../types/plugin.js';
 
 export function createPluginRegistry(
@@ -19,9 +19,9 @@ export function registerPlugin(
 
 export function getDefaultPluginRegistry(): PluginRegistry {
   return createPluginRegistry([
-    typescriptPlugin,
-    reactPlugin,
-    vuePlugin,
+    frontendCompilerPlugin,
+    frontendRuntimePlugin,
+    dependencyResolutionPlugin,
     genericPlugin,
   ]);
 }

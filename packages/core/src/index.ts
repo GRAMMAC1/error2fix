@@ -27,6 +27,15 @@ export { aggregateCoreAnalysis } from './analysis/aggregate.js';
 export { buildCoreAnalysisInput } from './analysis/build-input.js';
 export { diagnoseCapture } from './analysis/diagnose.js';
 export {
+  formatEvidenceLocation,
+  formatEvidenceSummary,
+  hasFailureEvidenceData,
+  type FailureEvidence,
+  type FailureEvidencePluginData,
+  type FailureEvidenceSource,
+} from './diagnosis/evidence.js';
+export { rankEvidence, reduceEvidence } from './diagnosis/rank.js';
+export {
   extractSignals,
   normalizeLogs,
   rankSignals,

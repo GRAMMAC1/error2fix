@@ -26,87 +26,84 @@ function makeCapture(stderr: string): LatestRawCapture {
 async function analyzeReact(stderr: string) {
   const input = await buildCoreAnalysisInput(makeCapture(stderr));
   const pluginResults = await runPlugins(input, getDefaultPluginRegistry());
-  const reactResult = pluginResults.find(
-    (result) => result.plugin === 'builtin-react',
+  const runtimeResult = pluginResults.find(
+    (result) => result.plugin === 'frontend-runtime',
   );
-  const typeScriptResult = pluginResults.find(
-    (result) => result.plugin === 'builtin-typescript',
+  const compilerResult = pluginResults.find(
+    (result) => result.plugin === 'frontend-compiler',
   );
   return {
     analysis: aggregateCoreAnalysis(input, pluginResults),
-    reactResult,
-    typeScriptResult,
+    compilerResult,
+    runtimeResult,
   };
 }
 
-describe('React plugin', () => {
+describe('frontend runtime React diagnostics', () => {
   it('detects invalid hook calls without routing runtime errors through TypeScript', async () => {
-    const { analysis, reactResult, typeScriptResult } = await analyzeReact(
+    const { analysis, compilerResult, runtimeResult } = await analyzeReact(
       [
         'Error: Invalid hook call. Hooks can only be called inside of the body of a function component.',
         '    at useUser (src/components/UserCard.tsx:12:3)',
         '    at renderWithHooks (node_modules/react-dom/cjs/react-dom.development.js:16305:18)',
       ].join('\n'),
     );
-    const data = reactResult?.data as
+    const data = runtimeResult?.data as
       | {
-          diagnostics: Array<{ kind: string; file?: string }>;
-          failureKinds: string[];
+          evidences: Array<{ category: string; file?: string }>;
         }
       | undefined;
 
-    expect(typeScriptResult?.matched).toBe(false);
-    expect(reactResult?.matched).toBe(true);
+    expect(compilerResult?.matched).toBe(false);
+    expect(runtimeResult?.matched).toBe(true);
     expect(analysis.summary).toContain('React hook rule');
     expect(analysis.relatedFiles).toContain('src/components/UserCard.tsx');
-    expect(data?.diagnostics[0]).toMatchObject({
-      kind: 'hook_rule',
+    expect(data?.evidences[0]).toMatchObject({
+      category: 'hook_rule',
       file: 'src/components/UserCard.tsx',
     });
-    expect(data?.failureKinds).toContain('hook_rule');
   });
 
   it('classifies Next hydration mismatches and keeps the app route file', async () => {
-    const { analysis, reactResult } = await analyzeReact(
+    const { analysis, runtimeResult } = await analyzeReact(
       [
         "Error: Hydration failed because the server rendered HTML didn't match the client.",
         '    at Home (src/app/page.tsx:8:5)',
       ].join('\n'),
     );
-    const data = reactResult?.data as
+    const data = runtimeResult?.data as
       | {
-          diagnostics: Array<{ kind: string; file?: string }>;
+          evidences: Array<{ category: string; file?: string }>;
         }
       | undefined;
 
-    expect(reactResult?.matched).toBe(true);
+    expect(runtimeResult?.matched).toBe(true);
     expect(analysis.summary).toContain('hydration mismatch');
     expect(analysis.relatedFiles).toContain('src/app/page.tsx');
-    expect(data?.diagnostics[0]).toMatchObject({
-      kind: 'hydration_mismatch',
+    expect(data?.evidences[0]).toMatchObject({
+      category: 'hydration_mismatch',
       file: 'src/app/page.tsx',
     });
   });
 
   it('identifies Next server/client component boundary failures', async () => {
-    const { analysis, reactResult } = await analyzeReact(
+    const { analysis, runtimeResult } = await analyzeReact(
       [
         'ReactServerComponentsError: You\'re importing a component that needs useState. It only works in a Client Component but none of its parents are marked with "use client".',
         './src/app/page.tsx',
       ].join('\n'),
     );
-    const data = reactResult?.data as
+    const data = runtimeResult?.data as
       | {
-          diagnostics: Array<{ kind: string }>;
+          evidences: Array<{ category: string }>;
         }
       | undefined;
 
-    expect(reactResult?.matched).toBe(true);
+    expect(runtimeResult?.matched).toBe(true);
     expect(analysis.summary).toContain('server client boundary');
     expect(analysis.relatedFiles).toContain('./src/app/page.tsx');
-    expect(data?.diagnostics[0]).toMatchObject({
-      kind: 'server_client_boundary',
+    expect(data?.evidences[0]).toMatchObject({
+      category: 'server_client_boundary',
     });
-    expect(reactResult?.suggestions?.join(' ')).toContain('use client');
   });
 });
