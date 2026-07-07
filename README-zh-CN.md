@@ -112,10 +112,13 @@ MCP 的调用流程尽量保持简单：
 ```text
 failed command output
   -> e2f_get_latest_failure_brief
+  -> 如果有历史检索能力，用返回的 summary 先检索相似问题
   -> 信息够就直接回答
   -> 信息不够再调用 e2f_query_failure_evidence
   -> 环境信息会影响判断时再调用 e2f_get_runtime_context
 ```
+
+如果 Agent 环境里有历史检索能力，可以用 brief 返回的 `summary` 和其他紧凑诊断字段作为查询线索；不要把原始 `stdout` 或 `stderr` 直接送去检索。如果没有历史检索能力，就继续走原来的 MCP 流程，不需要额外依赖。
 
 ## Benchmark
 
