@@ -1,15 +1,9 @@
 import type { CoreAnalysis, CoreAnalysisInput } from '../types/core.js';
 import type { PluginResult } from '../types/plugin.js';
+import { firstNonEmptyLine } from '../utils/text.js';
 
 function unique(values: string[]): string[] {
   return [...new Set(values.filter((value) => value.trim().length > 0))];
-}
-
-function firstNonEmptyLine(text: string | undefined): string | undefined {
-  return text
-    ?.split(/\r?\n/)
-    .map((line) => line.trim())
-    .find(Boolean);
 }
 
 function pickLeadResult(

@@ -1,12 +1,6 @@
 import type { CoreAnalysisInput } from '../types/core.js';
 import type { Error2FixPlugin } from '../types/plugin.js';
-
-function firstNonEmptyLine(text: string | undefined): string | undefined {
-  return text
-    ?.split(/\r?\n/)
-    .map((line) => line.trim())
-    .find(Boolean);
-}
+import { firstNonEmptyLine } from '../utils/text.js';
 
 export const genericPlugin: Error2FixPlugin<
   {
