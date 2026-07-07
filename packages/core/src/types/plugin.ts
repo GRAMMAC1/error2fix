@@ -5,7 +5,7 @@ import type { CoreAnalysisInput } from './core.js';
  */
 export interface PluginMeta {
   /**
-   * Unique plugin identifier, for example `plugin-ts` or `plugin-java`.
+   * Unique plugin identifier, for example `plugin-ts`.
    */
   name: string;
 
