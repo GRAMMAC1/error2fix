@@ -1,5 +1,4 @@
 import { genericPlugin } from '../plugins/generic.js';
-import { javaPlugin } from '../plugins/java.js';
 import { typescriptPlugin } from '../plugins/typescript.js';
 import type { Error2FixPlugin, PluginRegistry } from '../types/plugin.js';
 
@@ -17,5 +16,5 @@ export function registerPlugin(
 }
 
 export function getDefaultPluginRegistry(): PluginRegistry {
-  return createPluginRegistry([typescriptPlugin, javaPlugin, genericPlugin]);
+  return createPluginRegistry([typescriptPlugin, genericPlugin]);
 }

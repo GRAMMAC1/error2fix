@@ -26,13 +26,6 @@ const WORKSPACE_CANDIDATE_FILES = [
   'pnpm-lock.yaml',
   'package-lock.json',
   'yarn.lock',
-  'go.mod',
-  'go.work',
-  'Cargo.toml',
-  'composer.json',
-  'pom.xml',
-  'build.gradle',
-  'build.gradle.kts',
 ];
 
 async function buildWorkspaceSnapshot(
