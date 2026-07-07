@@ -1,3 +1,4 @@
+import { unique } from '../utils/text.js';
 import type {
   CandidateSnippet,
   ExtractedSignals,
@@ -9,10 +10,6 @@ const FILE_PATTERN =
   /(?:^|[\s("'`])((?:\.{0,2}\/)?(?:[\w@%+=:,.-]+\/)*[\w@%+=,.-]+\.(?:ts|tsx|js|jsx|mjs|cjs|json|java|kt|kts|scala|go|rs|php|py|rb|swift|c|cc|cpp|h|hpp|cs|vue|svelte|yaml|yml|toml|xml|gradle|properties))(?:[:(]\d+(?::\d+)?)?/g;
 const GENERIC_PATH_PATTERN =
   /(?:^|[\s("'`])((?:\.{0,2}\/)?(?:[\w@%+=:,.-]+\/)+[\w@%+=,.-]+)(?:[:(]\d+(?::\d+)?)?/g;
-
-function unique<T>(values: T[]): T[] {
-  return [...new Set(values)];
-}
 
 function scoreSegment(segment: LogSegment): number {
   const text = segment.text;

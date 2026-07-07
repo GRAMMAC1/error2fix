@@ -1,3 +1,7 @@
+import { uniqueNonEmptyStrings } from '@error2fix/core';
+
+export const unique = uniqueNonEmptyStrings;
+
 export function makeToolText(result: {
   ok: boolean;
   error?: { message: string };
@@ -23,10 +27,6 @@ export function truncate(
     return text;
   }
   return `${text.slice(0, Math.max(0, maxChars - 3)).trimEnd()}...`;
-}
-
-export function unique(values: string[]): string[] {
-  return [...new Set(values.filter((value) => value.trim().length > 0))];
 }
 
 function scoreFailureExcerpt(
