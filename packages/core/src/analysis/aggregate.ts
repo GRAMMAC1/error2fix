@@ -1,10 +1,6 @@
 import type { CoreAnalysis, CoreAnalysisInput } from '../types/core.js';
 import type { PluginResult } from '../types/plugin.js';
-import { firstNonEmptyLine } from '../utils/text.js';
-
-function unique(values: string[]): string[] {
-  return [...new Set(values.filter((value) => value.trim().length > 0))];
-}
+import { firstNonEmptyLine, uniqueNonEmptyStrings } from '../utils/text.js';
 
 function pickLeadResult(
   pluginResults: PluginResult<unknown, unknown>[],
@@ -50,7 +46,7 @@ function buildLikelyCauses(
     );
   }
 
-  return unique(causes).slice(0, 5);
+  return uniqueNonEmptyStrings(causes).slice(0, 5);
 }
 
 function buildNextSteps(
@@ -70,7 +66,10 @@ function buildNextSteps(
       : 'Re-run the command with more verbose logging if the failure is still ambiguous.',
   ];
 
-  return unique([...pluginSuggestions, ...genericSteps]).slice(0, 6);
+  return uniqueNonEmptyStrings([...pluginSuggestions, ...genericSteps]).slice(
+    0,
+    6,
+  );
 }
 
 export function aggregateCoreAnalysis(
@@ -85,7 +84,7 @@ export function aggregateCoreAnalysis(
     keySnippet: leadResult?.keySnippet ?? input.signals.snippet,
     likelyCauses: buildLikelyCauses(input, pluginResults),
     nextSteps: buildNextSteps(input, pluginResults),
-    relatedFiles: unique([
+    relatedFiles: uniqueNonEmptyStrings([
       ...input.signals.relatedFiles,
       ...pluginResults.flatMap((result) => result.relatedFiles ?? []),
     ]).slice(0, 10),

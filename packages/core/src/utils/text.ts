@@ -25,3 +25,7 @@ export function readAnalysisLogText(input: CoreAnalysisInput): string {
 export function unique<T>(values: T[]): T[] {
   return [...new Set(values)];
 }
+
+export function uniqueNonEmptyStrings(values: string[]): string[] {
+  return unique(values.filter((value) => value.trim().length > 0));
+}

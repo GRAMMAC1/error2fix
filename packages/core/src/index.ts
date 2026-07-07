@@ -49,5 +49,12 @@ export {
 } from './utils/fs.js';
 export { shortHash } from './utils/hash.js';
 export { toJson } from './utils/json.js';
+export {
+  firstNonEmptyLine,
+  normalizeDiagnosticMessage,
+  readAnalysisLogText,
+  unique,
+  uniqueNonEmptyStrings,
+} from './utils/text.js';
 export type { E2FPaths } from './utils/paths.js';
 export { getE2FPaths } from './utils/paths.js';
