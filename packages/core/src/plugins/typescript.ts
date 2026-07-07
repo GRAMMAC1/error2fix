@@ -1,5 +1,10 @@
 import type { CoreAnalysisInput } from '../types/core.js';
 import type { Error2FixPlugin } from '../types/plugin.js';
+import {
+  normalizeDiagnosticMessage,
+  readAnalysisLogText,
+  unique,
+} from '../utils/text.js';
 
 type TypeScriptFailureKind =
   | 'module_resolution'
@@ -37,32 +42,17 @@ const TS_CODE_PATTERN = /\bTS\d{3,5}\b/;
 const FRONTEND_TS_CONFIG_PATTERN =
   /^(vite|next|nuxt|vitest|jest|tailwind|postcss)\.config\.(ts|mts|cts|js|mjs|cjs)$/;
 
-function unique<T>(values: T[]): T[] {
-  return [...new Set(values)];
-}
-
-function readLogText(input: CoreAnalysisInput): string {
-  return [input.capture.stderr, input.capture.stdout, input.signals.snippet]
-    .filter(Boolean)
-    .join('\n');
-}
-
 function hasTypeScriptSignal(input: CoreAnalysisInput): boolean {
-  const text = readLogText(input);
+  const text = readAnalysisLogText(input);
   return (
     TS_CODE_PATTERN.test(text) ||
     /\b(?:tsc|vue-tsc|tsserver|typescript)\b/i.test(text) ||
     input.signals.keywords.some((keyword) => /^TS\d{3,5}$/.test(keyword)) ||
-    input.signals.relatedFiles.some((file) => TS_FILE_PATTERN.test(file)) ||
-    input.workspace.files.some((file) => file === 'tsconfig.json')
+    (input.signals.relatedFiles.some((file) => TS_FILE_PATTERN.test(file)) &&
+      /\b(?:type|typescript|tsc|TS\d{3,5})\b/i.test(text)) ||
+    (input.workspace.files.some((file) => file === 'tsconfig.json') &&
+      /\b(?:type|typescript|tsc|TS\d{3,5})\b/i.test(text))
   );
-}
-
-function normalizeMessage(message: string): string {
-  return message
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/[.;\s]+$/g, '.');
 }
 
 function classifyDiagnostic(
@@ -172,7 +162,7 @@ function parseLocation(
 }
 
 function extractDiagnostics(input: CoreAnalysisInput): TypeScriptDiagnostic[] {
-  const text = readLogText(input);
+  const text = readAnalysisLogText(input);
   const diagnostics: TypeScriptDiagnostic[] = [];
   const seen = new Set<string>();
   const diagnosticPattern =
@@ -180,7 +170,7 @@ function extractDiagnostics(input: CoreAnalysisInput): TypeScriptDiagnostic[] {
 
   for (const match of text.matchAll(diagnosticPattern)) {
     const code = match.groups?.code.toUpperCase();
-    const message = normalizeMessage(match.groups?.message ?? '');
+    const message = normalizeDiagnosticMessage(match.groups?.message ?? '');
     if (!code || !message) {
       continue;
     }
@@ -241,7 +231,7 @@ function buildKeySnippet(
   input: CoreAnalysisInput,
   diagnostics: TypeScriptDiagnostic[],
 ): string | undefined {
-  const text = readLogText(input);
+  const text = readAnalysisLogText(input);
   const first = diagnostics[0];
   if (!first) {
     return input.signals.snippet;
