@@ -26,18 +26,18 @@ function makeCapture(stderr: string): LatestRawCapture {
 async function analyzeTypeScript(stderr: string) {
   const input = await buildCoreAnalysisInput(makeCapture(stderr));
   const pluginResults = await runPlugins(input, getDefaultPluginRegistry());
-  const typeScriptResult = pluginResults.find(
-    (result) => result.plugin === 'builtin-typescript',
+  const compilerResult = pluginResults.find(
+    (result) => result.plugin === 'frontend-compiler',
   );
   return {
     analysis: aggregateCoreAnalysis(input, pluginResults),
-    typeScriptResult,
+    compilerResult,
   };
 }
 
-describe('TypeScript plugin', () => {
+describe('frontend compiler diagnostics', () => {
   it('extracts module-resolution diagnostics with file location and focused guidance', async () => {
-    const { analysis, typeScriptResult } = await analyzeTypeScript(
+    const { analysis, compilerResult } = await analyzeTypeScript(
       [
         'vite build failed',
         "src/routes/App.tsx:8:22 - error TS2307: Cannot find module '@app/widgets' or its corresponding type declarations.",
@@ -45,76 +45,81 @@ describe('TypeScript plugin', () => {
         '                       ~~~~~~~~~~~~~~',
       ].join('\n'),
     );
-    const data = typeScriptResult?.data as
+    const data = compilerResult?.data as
       | {
-          diagnostics: Array<{
-            code: string;
-            kind: string;
+          evidences: Array<{
+            category: string;
             file?: string;
             line?: number;
             column?: number;
+            message: string;
           }>;
         }
       | undefined;
 
-    expect(typeScriptResult?.matched).toBe(true);
+    expect(compilerResult?.matched).toBe(true);
     expect(analysis.summary).toContain('TS2307');
     expect(analysis.summary).toContain('src/routes/App.tsx:8:22');
     expect(analysis.relatedFiles).toContain('src/routes/App.tsx');
-    expect(data?.diagnostics[0]).toMatchObject({
-      code: 'TS2307',
-      kind: 'module_resolution',
+    expect(data?.evidences[0]).toMatchObject({
+      category: 'module_resolution',
       file: 'src/routes/App.tsx',
       line: 8,
       column: 22,
     });
-    expect(typeScriptResult?.suggestions?.join(' ')).toContain('import path');
+    expect(data?.evidences[0]?.message).toContain('TS2307');
   });
 
   it('classifies assignability diagnostics from parenthesized locations', async () => {
-    const { analysis, typeScriptResult } = await analyzeTypeScript(
+    const { analysis, compilerResult } = await analyzeTypeScript(
       [
         "src/components/Counter.tsx(14,7): error TS2322: Type 'string' is not assignable to type 'number'.",
         '  const count: number = label;',
         '        ~~~~~',
       ].join('\n'),
     );
-    const data = typeScriptResult?.data as
+    const data = compilerResult?.data as
       | {
-          diagnostics: Array<{ code: string; kind: string; file?: string }>;
-          failureKinds: string[];
+          evidences: Array<{
+            category: string;
+            file?: string;
+            message: string;
+          }>;
         }
       | undefined;
 
-    expect(analysis.summary).toContain('TypeScript TS2322');
+    expect(analysis.summary).toContain('TS2322');
     expect(analysis.summary).toContain('src/components/Counter.tsx:14:7');
-    expect(data?.diagnostics[0]).toMatchObject({
-      code: 'TS2322',
-      kind: 'type_assignability',
+    expect(data?.evidences[0]).toMatchObject({
+      category: 'type_assignability',
       file: 'src/components/Counter.tsx',
     });
-    expect(data?.failureKinds).toContain('type_assignability');
   });
 
   it('keeps vue-tsc diagnostics tied to Vue SFC files', async () => {
-    const { analysis, typeScriptResult } = await analyzeTypeScript(
+    const { analysis, compilerResult } = await analyzeTypeScript(
       [
         'vue-tsc --noEmit',
         "src/components/UserCard.vue:42:18 - error TS2339: Property 'profileUrl' does not exist on type 'User'.",
       ].join('\n'),
     );
-    const data = typeScriptResult?.data as
+    const data = compilerResult?.data as
       | {
-          diagnostics: Array<{ code: string; kind: string; file?: string }>;
+          evidences: Array<{
+            category: string;
+            file?: string;
+            framework?: string;
+            message: string;
+          }>;
         }
       | undefined;
 
-    expect(typeScriptResult?.matched).toBe(true);
+    expect(compilerResult?.matched).toBe(true);
     expect(analysis.summary).toContain('TS2339');
     expect(analysis.relatedFiles).toContain('src/components/UserCard.vue');
-    expect(data?.diagnostics[0]).toMatchObject({
-      code: 'TS2339',
-      kind: 'missing_property',
+    expect(data?.evidences[0]).toMatchObject({
+      category: 'missing_property',
+      framework: 'vue',
       file: 'src/components/UserCard.vue',
     });
   });

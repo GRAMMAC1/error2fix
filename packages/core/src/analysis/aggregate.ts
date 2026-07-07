@@ -1,23 +1,29 @@
+import {
+  type FailureEvidence,
+  formatEvidenceSummary,
+  hasFailureEvidenceData,
+} from '../diagnosis/evidence.js';
+import { rankEvidence, reduceEvidence } from '../diagnosis/rank.js';
 import type { CoreAnalysis, CoreAnalysisInput } from '../types/core.js';
 import type { PluginResult } from '../types/plugin.js';
 import { firstNonEmptyLine, uniqueNonEmptyStrings } from '../utils/text.js';
 
-function pickLeadResult(
+function collectEvidence(
   pluginResults: PluginResult<unknown, unknown>[],
-): PluginResult<unknown, unknown> | undefined {
-  return (
-    pluginResults.find(
-      (result) => result.matched && result.plugin !== 'builtin-generic',
-    ) ?? pluginResults.find((result) => result.matched)
-  );
+): FailureEvidence[] {
+  return pluginResults
+    .filter((result) => result.matched && hasFailureEvidenceData(result.data))
+    .flatMap((result) =>
+      hasFailureEvidenceData(result.data) ? result.data.evidences : [],
+    );
 }
 
 function buildSummary(
   input: CoreAnalysisInput,
-  leadResult: PluginResult<unknown, unknown> | undefined,
+  leadEvidence: FailureEvidence | undefined,
 ): string {
   return (
-    leadResult?.summary ??
+    (leadEvidence ? formatEvidenceSummary(leadEvidence) : undefined) ??
     firstNonEmptyLine(input.signals.snippet) ??
     firstNonEmptyLine(input.capture.stderr) ??
     firstNonEmptyLine(input.capture.stdout) ??
@@ -27,12 +33,12 @@ function buildSummary(
 
 function buildLikelyCauses(
   input: CoreAnalysisInput,
-  pluginResults: PluginResult<unknown, unknown>[],
+  rankedEvidence: FailureEvidence[],
 ): string[] {
-  const causes = pluginResults
-    .filter((result) => result.matched)
-    .map((result) => result.summary ?? '')
-    .filter(Boolean);
+  const causes = rankedEvidence
+    .filter((evidence) => evidence.source !== 'generic')
+    .slice(0, 3)
+    .map(formatEvidenceSummary);
 
   if (input.signals.keywords.length > 0) {
     causes.push(
@@ -51,42 +57,57 @@ function buildLikelyCauses(
 
 function buildNextSteps(
   input: CoreAnalysisInput,
-  pluginResults: PluginResult<unknown, unknown>[],
+  rankedEvidence: FailureEvidence[],
 ): string[] {
-  const pluginSuggestions = pluginResults.flatMap(
-    (result) => result.suggestions ?? [],
-  );
-
+  const leadEvidence = rankedEvidence[0];
+  const firstFile = leadEvidence?.file ?? input.signals.relatedFiles[0];
   const genericSteps = [
-    input.signals.relatedFiles[0]
-      ? `Inspect ${input.signals.relatedFiles[0]} first.`
+    firstFile
+      ? `Inspect ${firstFile} first.`
       : 'Inspect the first high-signal error line in stderr.',
-    input.signals.stackLines.length > 0
-      ? 'Trace the top stack frame back to the application code path.'
-      : 'Re-run the command with more verbose logging if the failure is still ambiguous.',
   ];
 
-  return uniqueNonEmptyStrings([...pluginSuggestions, ...genericSteps]).slice(
-    0,
-    6,
-  );
+  if (leadEvidence?.source === 'dependency') {
+    genericSteps.push(
+      'Check dependency installation, package exports, module format, and workspace aliases before chasing framework stack frames.',
+    );
+  } else if (leadEvidence?.source === 'runtime') {
+    genericSteps.push(
+      'Start from the first application component frame rather than framework internals.',
+    );
+  } else if (leadEvidence?.source === 'compiler') {
+    genericSteps.push(
+      'Fix the earliest precise compiler diagnostic before chasing later cascade errors.',
+    );
+  } else if (input.signals.stackLines.length > 0) {
+    genericSteps.push(
+      'Trace the top stack frame back to the application code path.',
+    );
+  }
+
+  return uniqueNonEmptyStrings(genericSteps).slice(0, 4);
 }
 
 export function aggregateCoreAnalysis(
   input: CoreAnalysisInput,
   pluginResults: PluginResult<unknown, unknown>[],
 ): CoreAnalysis {
-  const leadResult = pickLeadResult(pluginResults);
+  const rankedEvidence = rankEvidence(
+    reduceEvidence(collectEvidence(pluginResults)),
+  );
+  const leadEvidence = rankedEvidence[0];
 
   return {
     host: input.capture.host,
-    summary: buildSummary(input, leadResult),
-    keySnippet: leadResult?.keySnippet ?? input.signals.snippet,
-    likelyCauses: buildLikelyCauses(input, pluginResults),
-    nextSteps: buildNextSteps(input, pluginResults),
+    summary: buildSummary(input, leadEvidence),
+    keySnippet: leadEvidence?.snippet ?? input.signals.snippet,
+    likelyCauses: buildLikelyCauses(input, rankedEvidence),
+    nextSteps: buildNextSteps(input, rankedEvidence),
     relatedFiles: uniqueNonEmptyStrings([
+      ...rankedEvidence.flatMap((evidence) =>
+        evidence.file ? [evidence.file] : [],
+      ),
       ...input.signals.relatedFiles,
-      ...pluginResults.flatMap((result) => result.relatedFiles ?? []),
     ]).slice(0, 10),
     pluginResults,
   };

@@ -1,6 +1,10 @@
+import type { FailureEvidence } from '../diagnosis/evidence.js';
 import type { CoreAnalysisInput } from '../types/core.js';
 import type { Error2FixPlugin } from '../types/plugin.js';
-import { firstNonEmptyLine } from '../utils/text.js';
+import {
+  firstNonEmptyLine,
+  normalizeDiagnosticMessage,
+} from '../utils/text.js';
 
 export const genericPlugin: Error2FixPlugin<
   {
@@ -8,7 +12,7 @@ export const genericPlugin: Error2FixPlugin<
     relatedFileCount: number;
   },
   {
-    evidence: string[];
+    evidences: FailureEvidence[];
   }
 > = {
   meta: {
@@ -31,14 +35,18 @@ export const genericPlugin: Error2FixPlugin<
       firstNonEmptyLine(input.capture.stdout) ??
       `Command "${input.capture.metadata.command}" failed with exit code ${input.capture.metadata.exitCode}.`;
 
-    const suggestions = [
-      input.signals.relatedFiles.length > 0
-        ? `Open the first referenced file: ${input.signals.relatedFiles[0]}.`
-        : 'Review the first non-empty error line in stderr.',
-      input.signals.stackLines.length > 0
-        ? 'Follow the top stack frame to locate the failing code path.'
-        : 'Re-run the command with verbose logging if the failure remains unclear.',
-    ];
+    const evidence: FailureEvidence = {
+      id: 'generic:lead-line',
+      ruleId: 'generic.lead-line',
+      source: 'generic',
+      category: 'generic_failure',
+      message: normalizeDiagnosticMessage(leadLine),
+      file: input.signals.relatedFiles[0],
+      rawLine: 1,
+      confidence: 30,
+      priority: 20,
+      snippet: input.signals.snippet,
+    };
 
     return {
       plugin: 'builtin-generic',
@@ -48,9 +56,8 @@ export const genericPlugin: Error2FixPlugin<
       relatedFiles: input.signals.relatedFiles,
       context,
       data: {
-        evidence: input.signals.keywords,
+        evidences: [evidence],
       },
-      suggestions,
     };
   },
 };
