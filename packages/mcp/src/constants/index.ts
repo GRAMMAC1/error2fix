@@ -26,6 +26,7 @@ export const WORKFLOW_DESCRIPTION = [
   'Scope: use these tools for frontend JavaScript/TypeScript project failures such as npm/pnpm/yarn scripts, Vite, Next.js, React, Svelte, Tailwind, bundlers, test runners, dependency resolution, and framework compile errors.',
   'Do not treat this server as a general-purpose diagnosis tool for arbitrary programming languages yet.',
   'Recommended workflow: call e2f_get_latest_failure_brief first.',
+  'If historical context search is available, use the returned summary and compact diagnostic fields as the search query before requesting more evidence; never search with raw stdout or stderr.',
   'If next.canAnswerFromDiagnosis is true, answer without requesting raw logs.',
   'If more frontend failure evidence is needed, call e2f_query_failure_evidence with evidence IDs or suggested queries from the diagnosis.',
   'Call e2f_get_runtime_context only when frontend command facts, package manager, runtime versions, workspace files, git state, or safe environment details affect the fix.',

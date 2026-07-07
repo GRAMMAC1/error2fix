@@ -4,6 +4,8 @@ MCP server for agent-facing frontend `error2fix` diagnosis workflows.
 
 This package exposes compact frontend failure-analysis tools for IDEs and coding agents. It is currently focused on JavaScript/TypeScript frontend workflows such as package scripts, bundlers, framework compile errors, and dependency resolution. The client provides the raw failed command output, and the server returns small, structured responses that are safer for an LLM token budget than full log replay.
 
+When the host agent has a history-search capability, use the returned brief `summary` and compact diagnostic fields to search for similar past failures. Do not pass raw `stdout` or `stderr` into history search. Without history search, use the same brief -> evidence -> runtime-context flow.
+
 ## Tools
 
 - `e2f_get_latest_failure_brief`: compresses client-provided `stdout` and `stderr` into a diagnosis brief and creates a session.

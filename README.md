@@ -110,10 +110,16 @@ The intended agent flow is:
 ```text
 failed command output
   -> e2f_get_latest_failure_brief
+  -> optional history search with the returned summary if available
   -> answer if sufficient
   -> e2f_query_failure_evidence only if more detail is needed
   -> e2f_get_runtime_context only if environment context matters
 ```
+
+If the agent environment provides a history-search capability, use the brief
+`summary` and other compact diagnostic fields as the query seed. Do not search
+with raw `stdout` or `stderr`. When no history search is available, follow the
+same MCP flow without any extra dependency.
 
 ## Benchmark
 
